@@ -10,7 +10,7 @@
 
 ### Examples
 
-Here is the simplest form of getting data from VirusToal:
+Here is the simplest form of getting data from VirusTotal:
 
 ```csharp
 static void Main(string[] args)
