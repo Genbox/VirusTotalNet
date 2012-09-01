@@ -14,7 +14,7 @@ namespace VirusTotalNET
         private static RestClient _client = new RestClient();
         private string _apiKey;
         private bool _useTls;
-        private const long FileSizeLimit = 3354432; //32 MB
+        private const long FileSizeLimit = 33554432; //32 MB
 
         public VirusTotal(string apiKey)
         {
@@ -67,7 +67,7 @@ namespace VirusTotalNET
             if (file.Length <= FileSizeLimit)
                 request.AddFile("file", file.FullName);
             else
-                throw new ArgumentException("Filesize on VirusTotal is 32 MB, your file is " + file.Length / 1024 + " MB");
+                throw new ArgumentException("Filesize on VirusTotal is 32 MB, your file is " + file.Length / 1024 / 1024 + " MB");
 
             //Output
             return GetResults<ScanResult>(request);
