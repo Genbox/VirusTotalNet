@@ -18,6 +18,9 @@ namespace VirusTotalNET
 
         public VirusTotal(string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                throw new ArgumentException("the API key must not be empty.", "apiKey");
+
             _apiKey = apiKey;
             _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
             _client.Proxy = null;
