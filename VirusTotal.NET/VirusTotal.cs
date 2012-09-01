@@ -170,6 +170,12 @@ namespace VirusTotalNET
         /// <returns>A ScanResult object containing information about the resource.</returns>
         public ScanResult CreateComment(string resource, string comment)
         {
+            if (string.IsNullOrEmpty(resource))
+                throw new ArgumentException("Resource must not be null or empty", "resource");
+
+            if (string.IsNullOrEmpty(comment))
+                throw new ArgumentException("Comment must not be null or empty", "comment");
+
             //https://www.virustotal.com/vtapi/v2/comments/put
             RestRequest request = new RestRequest("comments/put", Method.POST);
 
@@ -220,6 +226,9 @@ namespace VirusTotalNET
         /// <returns>True if the file has been scanned before.</returns>
         public bool HasUrlBeenScanned(string url)
         {
+            if (string.IsNullOrEmpty(url))
+                throw new ArgumentException("Url must not be null or empty", "url");
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://www.virustotal.com/url/{0}/analysis/", HashHelper.GetSHA256(NormalizeUrl(url))));
             request.Method = "HEAD";
             request.AllowAutoRedirect = false;
