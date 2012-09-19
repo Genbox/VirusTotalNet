@@ -70,7 +70,7 @@ namespace VirusTotalNET
             if (file.Length <= FileSizeLimit)
                 request.AddFile("file", file.FullName);
             else
-                throw new ArgumentException("Filesize on VirusTotal is 32 MB, your file is " + file.Length / 1024 / 1024 + " MB");
+                throw new ArgumentException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
 
             //Output
             return GetResults<ScanResult>(request);
