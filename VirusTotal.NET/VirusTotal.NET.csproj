@@ -44,6 +44,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Objects\IResponseCode.cs" />
     <Compile Include="Objects\Report.cs" />

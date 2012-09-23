@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using RestSharp;
 using RestSharp.Deserializers;
@@ -15,6 +16,8 @@ namespace VirusTotalNET
         private string _apiKey;
         private bool _useTls;
         private const long FileSizeLimit = 33554432; //32 MB
+        private const int Retry = 3;
+        private int _retryCounter = Retry;
 
         public VirusTotal(string apiKey)
         {
@@ -70,7 +73,7 @@ namespace VirusTotalNET
             if (file.Length <= FileSizeLimit)
                 request.AddFile("file", file.FullName);
             else
-                throw new ArgumentException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
+                throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
 
             //Output
             return GetResults<ScanResult>(request);
@@ -253,8 +256,35 @@ namespace VirusTotalNET
             }
 
             IDeserializer deserializer = new JsonDeserializer();
-            return deserializer.Deserialize<T>(response);
+            T results;
+
+            try
+            {
+                results = deserializer.Deserialize<T>(response);
+            }
+            catch (SerializationException)
+            {
+                //retry request.
+                try
+                {
+                    _retryCounter--;
+
+                    if (_retryCounter <= 0)
+                    {
+                        _retryCounter = Retry;
+                        return default(T);
+                    }
+                    results = GetResults<T>(request, applyHack);
+                }
+                catch (SerializationException ex)
+                {
+                    throw new Exception("Failed to deserialize request.", ex);
+                }
+            }
+
+            return results;
         }
+
 
         private string NormalizeUrl(string url)
         {
