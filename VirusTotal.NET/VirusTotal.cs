@@ -285,7 +285,6 @@ namespace VirusTotalNET
             return results;
         }
 
-
         private string NormalizeUrl(string url)
         {
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))

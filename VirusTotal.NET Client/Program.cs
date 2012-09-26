@@ -17,7 +17,7 @@ namespace VirusTotalNETClient
             virusTotal.UseTLS = true;
 
             FileInfo fileInfo = new FileInfo("testfile.txt");
-            const string url = "http://www.dr.dk/";
+            const string url = "http://www.google.com/";
 
             //Create a new file
             File.WriteAllText(fileInfo.FullName, "This is a test file!");
