@@ -282,6 +282,8 @@ namespace VirusTotalNET
                 }
             }
 
+            //reset retry counter
+            _retryCounter = Retry;
             return results;
         }
 
