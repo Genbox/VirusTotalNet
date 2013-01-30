@@ -6,9 +6,24 @@ namespace VirusTotalNET.Objects
 {
 	public class ScanEngine
 	{
+        /// <summary>
+        /// The name of the engine.
+        /// </summary>
 		public string Name { get; set; }
+
+        /// <summary>
+        /// True if the engine flagged the resource.
+        /// </summary>
 		public bool Detected { get; set; }
+
+        /// <summary>
+        /// Version of the engine.
+        /// </summary>
 		public string Version { get; set; }
+
+        /// <summary>
+        /// Contains the name of the malware, if any.
+        /// </summary>
 		public string Result { get; set; }
 
 		[DeserializeAs(Name = "update")]
@@ -24,6 +39,9 @@ namespace VirusTotalNET.Objects
 			}
 		}
 
+        /// <summary>
+        /// The date of the latest signatures of the engine.
+        /// </summary>
 		public DateTime UpdateDate { get; set; }
 	}
 }

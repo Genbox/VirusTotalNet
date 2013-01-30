@@ -191,53 +191,14 @@ namespace VirusTotalNET
             return GetResults<ScanResult>(request);
         }
 
-        /// <summary>
-        /// Check if a file has already been scanned.
-        /// Note: This does not use the API, but the website itself.
-        /// </summary>
-        /// <param name="file">The file to check.</param>
-        /// <returns>True if the file has been scanned before.</returns>
-        public bool HasFileBeenScanned(string file)
+        public string GetPublicScanLink(FileInfo file)
         {
-            return HasFileBeenScanned(new FileInfo(file));
+            return string.Format("{0}://www.virustotal.com/file/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(file));
         }
 
-        /// <summary>
-        /// Check if a file has already been scanned.
-        /// Note: This does not use the API, but the website itself.
-        /// </summary>
-        /// <param name="file">The file to check.</param>
-        /// <returns>True if the file has been scanned before.</returns>
-        public bool HasFileBeenScanned(FileInfo file)
+        public string GetPublicScanLink(string url)
         {
-            if (!file.Exists)
-                throw new FileNotFoundException("The file was not found.", file.Name);
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://www.virustotal.com/file/{0}/analysis/", HashHelper.GetSHA256(file)));
-            request.Method = "HEAD";
-            request.AllowAutoRedirect = false;
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            return response.StatusCode != HttpStatusCode.Redirect;
-        }
-
-        /// <summary>
-        /// Check if a url has already been scanned.
-        /// Note: This does not use the API, but the website itself.
-        /// </summary>
-        /// <param name="url">The url to check.</param>
-        /// <returns>True if the file has been scanned before.</returns>
-        public bool HasUrlBeenScanned(string url)
-        {
-            if (string.IsNullOrEmpty(url))
-                throw new ArgumentException("Url must not be null or empty", "url");
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://www.virustotal.com/url/{0}/analysis/", HashHelper.GetSHA256(NormalizeUrl(url))));
-            request.Method = "HEAD";
-            request.AllowAutoRedirect = false;
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            return response.StatusCode != HttpStatusCode.Redirect;
+            return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
         }
 
         private T GetResults<T>(RestRequest request, bool applyHack = false)
