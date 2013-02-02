@@ -10,6 +10,8 @@ namespace VirusTotalNETClient
 {
     class Program
     {
+        private const string ScanUrl = "http://www.google.com/";
+
         static void Main(string[] args)
         {
             VirusTotal virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
@@ -29,11 +31,10 @@ namespace VirusTotalNETClient
 
             Console.WriteLine("File has been scanned before: " + (hasFileBeenScannedBefore ? "Yes" : "No"));
 
+            //If the file has been scanned before, the results are embedded inside the report.
             if (hasFileBeenScannedBefore)
             {
-                //Get the latest report of the file
-                List<Report> fileReports = virusTotal.GetFileReport(HashHelper.GetMD5(fileInfo));
-                fileReports.ForEach(PrintScan);
+                PrintScan(fileReport);
             }
             else
             {
@@ -43,22 +44,20 @@ namespace VirusTotalNETClient
 
             Console.WriteLine();
 
-            const string url = "http://www.google.com/";
 
-            Report urlReport = virusTotal.GetUrlReport(url).First();
+            Report urlReport = virusTotal.GetUrlReport(ScanUrl).First();
 
             bool hasUrlBeenScannedBefore = urlReport.ResponseCode == 1;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
 
+            //If the url has been scanned before, the results are embedded inside the report.
             if (hasUrlBeenScannedBefore)
             {
-                //Get the latest report of the file
-                List<Report> urlReports = virusTotal.GetUrlReport(url);
-                urlReports.ForEach(PrintScan);
+                PrintScan(urlReport);
             }
             else
             {
-                List<ScanResult> urlResults = virusTotal.ScanUrl(url);
+                List<ScanResult> urlResults = virusTotal.ScanUrl(ScanUrl);
                 urlResults.ForEach(PrintScan);
             }
 
