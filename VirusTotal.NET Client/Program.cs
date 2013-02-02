@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using VirusTotalNET;
 using VirusTotalNET.Objects;
 
@@ -17,14 +18,16 @@ namespace VirusTotalNETClient
             virusTotal.UseTLS = true;
 
             FileInfo fileInfo = new FileInfo("testfile.txt");
-            const string url = "http://www.google.com/";
 
             //Create a new file
             File.WriteAllText(fileInfo.FullName, "This is a test file!");
 
             //Check if the file has been scanned before.
-            bool hasFileBeenScannedBefore = virusTotal.HasFileBeenScanned(fileInfo);
-            Console.WriteLine("File has been scanned before: " + hasFileBeenScannedBefore);
+            Report fileReport = virusTotal.GetFileReport(fileInfo).First();
+
+            bool hasFileBeenScannedBefore = fileReport.ResponseCode == 1;
+
+            Console.WriteLine("File has been scanned before: " + (hasFileBeenScannedBefore ? "Yes" : "No"));
 
             if (hasFileBeenScannedBefore)
             {
@@ -40,8 +43,12 @@ namespace VirusTotalNETClient
 
             Console.WriteLine();
 
-            bool hasUrlBeenScannedBefore = virusTotal.HasUrlBeenScanned(url);
-            Console.WriteLine("URL has been scanned before: " + hasUrlBeenScannedBefore);
+            const string url = "http://www.google.com/";
+
+            Report urlReport = virusTotal.GetUrlReport(url).First();
+
+            bool hasUrlBeenScannedBefore = urlReport.ResponseCode == 1;
+            Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
 
             if (hasUrlBeenScannedBefore)
             {

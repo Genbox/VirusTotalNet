@@ -102,8 +102,29 @@ namespace VirusTotalNET
         }
 
         /// <summary>
+        /// Gets the report of the file.
+        /// </summary>
+        /// <param name="file">A list of files that will get hashes and scanned.</param>
+        /// <returns></returns>
+        public List<Report> GetFileReport(params FileInfo[] file)
+        {
+            string[] resources = new string[file.Length];
+
+            for (int i = 0; i < file.Length; i++)
+            {
+                FileInfo fileInfo = file[i];
+                if (fileInfo.Exists)
+                    resources[i] = HashHelper.GetSHA256(fileInfo);
+            }
+
+            return GetFileReport(resources);
+        }
+
+
+        /// <summary>
         /// Gets the report of the file represented by its hash or scan ID.
-        /// Keep in mind that URLs sent using the API have the lowest scanning priority, depending on VirusTotal's load, it may take several hours before the URL is scanned, so query the report at regular intervals until the result shows up and do not keep submitting the URL once and over again.
+        /// Keep in mind that URLs sent using the API have the lowest scanning priority, depending on VirusTotal's load, it may take several hours before the file is scanned,
+        /// so query the report at regular intervals until the result shows up and do not keep submitting the file over and over again.
         /// </summary>
         /// <param name="resources">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         /// <returns></returns>
