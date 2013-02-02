@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using RestSharp;
 using RestSharp.Deserializers;
+using VirusTotalNET.Exceptions;
 using VirusTotalNET.Objects;
 
 namespace VirusTotalNET
@@ -66,7 +67,7 @@ namespace VirusTotalNET
 
             //https://www.virustotal.com/vtapi/v2/file/scan
             RestRequest request = new RestRequest("file/scan", Method.POST);
-            
+
             //Required
             request.AddParameter("apikey", _apiKey);
 
@@ -227,6 +228,9 @@ namespace VirusTotalNET
 
             if (response.StatusCode == HttpStatusCode.NoContent)
                 throw new RateLimitException("You have reached the 5 requests pr. min. limit of VirusTotal");
+
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+                throw new AccessDeniedException("You don't have access to the service. Make sure your API key is working correctly.");
 
             if (applyHack)
             {

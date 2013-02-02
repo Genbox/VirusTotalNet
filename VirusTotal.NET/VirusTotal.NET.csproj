@@ -44,14 +44,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SizeLimitException.cs" />
+    <Compile Include="Exceptions\AccessDeniedException.cs" />
+    <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Objects\IResponseCode.cs" />
     <Compile Include="Objects\Report.cs" />
     <Compile Include="Objects\ScanEngine.cs" />
     <Compile Include="Objects\ScanResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RateLimitException.cs" />
+    <Compile Include="Exceptions\RateLimitException.cs" />
     <Compile Include="VirusTotal.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

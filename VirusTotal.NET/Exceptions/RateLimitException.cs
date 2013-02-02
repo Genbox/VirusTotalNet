@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VirusTotalNET
+namespace VirusTotalNET.Exceptions
 {
     /// <summary>
     /// Exception that is thrown when the rate limit has been hit.

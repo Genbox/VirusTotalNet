@@ -44,7 +44,6 @@ namespace VirusTotalNETClient
 
             Console.WriteLine();
 
-
             Report urlReport = virusTotal.GetUrlReport(ScanUrl).First();
 
             bool hasUrlBeenScannedBefore = urlReport.ResponseCode == 1;
