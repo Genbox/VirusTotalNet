@@ -66,7 +66,7 @@ namespace VirusTotalNET
 
             //https://www.virustotal.com/vtapi/v2/file/scan
             RestRequest request = new RestRequest("file/scan", Method.POST);
-
+            
             //Required
             request.AddParameter("apikey", _apiKey);
 
@@ -119,7 +119,6 @@ namespace VirusTotalNET
 
             return GetFileReport(resources);
         }
-
 
         /// <summary>
         /// Gets the report of the file represented by its hash or scan ID.

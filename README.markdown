@@ -25,15 +25,13 @@ static void Main(string[] args)
     //Create a new file
     File.WriteAllText(fileInfo.FullName, "This is a test file!");
 
-    //Check if the file has been scanned before.
-    bool hasFileBeenScannedBefore = virusTotal.HasFileBeenScanned(fileInfo);
-    Console.WriteLine("File has been scanned before: " + hasFileBeenScannedBefore);
+	 //Check if the file has been scanned before.
+	Report fileReport = virusTotal.GetFileReport(fileInfo).First();
+	bool hasFileBeenScannedBefore = fileReport.ResponseCode == 1;
 
     if (hasFileBeenScannedBefore)
     {
-        //Get the latest report of the file
-        List<Report> fileReports = virusTotal.GetFileReport(HashHelper.GetMD5(fileInfo));
-        Console.WriteLine(fileReports[0].ScanId);
+        Console.WriteLine(fileReport.ScanId);
     }
     else
     {
