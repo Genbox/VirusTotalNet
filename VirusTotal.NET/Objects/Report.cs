@@ -6,6 +6,11 @@ namespace VirusTotalNET.Objects
     public class Report : IResponseCode
     {
         /// <summary>
+        /// Filescan Id of the resource.
+        /// </summary>
+        public string FilescanId { get; set; }
+
+        /// <summary>
         /// Contains the id of the resource. Can be a SHA256, MD5 or other hash type.
         /// </summary>
         public string Resource { get; set; }
