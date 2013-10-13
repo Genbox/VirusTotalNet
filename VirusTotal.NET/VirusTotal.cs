@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -22,12 +23,11 @@ namespace VirusTotalNET
 
         public VirusTotal(string apiKey)
         {
-            if (string.IsNullOrEmpty(apiKey))
-                throw new ArgumentException("the API key must not be empty.", "apiKey");
+            if (string.IsNullOrEmpty(apiKey) || apiKey.Length < 64)
+                throw new ArgumentException("You have to set an API key.", "apiKey");
 
             _apiKey = apiKey;
             _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
-            _client.Proxy = null;
             _client.FollowRedirects = false;
         }
 
@@ -45,21 +45,16 @@ namespace VirusTotalNET
         }
 
         /// <summary>
-        /// Scan a file. It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Get or set the proxy.
         /// </summary>
-        /// <param name="file">The file to scan</param>
-        /// <returns>The ScanResult object containing a SHA256 and ScanId.</returns>
-        public ScanResult ScanFile(string file)
-        {
-            FileInfo fileInfo = new FileInfo(file);
-            return ScanFile(fileInfo);
-        }
+        public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
 
         /// <summary>
-        /// Scan a file. It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Scan a file.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
         /// </summary>
         /// <param name="file">The file to scan</param>
-        /// <returns>The ScanResult object containing a SHA256 and ScanId.</returns>
+        /// <returns>The scan results.</returns>
         public ScanResult ScanFile(FileInfo file)
         {
             if (!file.Exists)
@@ -81,14 +76,51 @@ namespace VirusTotalNET
         }
 
         /// <summary>
-        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
-        /// Before requesting a rescan you should retrieve the latest report on the files.
+        /// Scan multiple files.
+        /// Note: It is highly encouraged to get the report of the files before scanning, in case it they already been scanned before.
         /// </summary>
-        /// <param name="resources">a MD5, SHA1, SHA256 of the file. You can also specify a CSV list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call. Note that the file must already be present in our file store.</param>
-        /// <returns>A list of ScanResult objects containing the SHA256 and Scan ID of each item.</returns>
-        public List<ScanResult> Rescan(params string[] resources)
+        /// <param name="files">The files you wish to scan.</param>
+        /// <returns>The scan results.</returns>
+        public IEnumerable<ScanResult> ScanFiles(IEnumerable<FileInfo> files)
         {
-            if (resources.Length <= 0)
+            foreach (FileInfo fileInfo in files)
+            {
+                yield return ScanFile(fileInfo);
+            }
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the file.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public ScanResult RescanFile(FileInfo file)
+        {
+            return RescanFiles(new[] { file }).First();
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the files.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> RescanFiles(IList<FileInfo> files)
+        {
+            string[] hashes = GetResourcesFromFiles(files);
+            return RescanFiles(hashes);
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the files.
+        /// </summary>
+        /// <param name="hashList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.
+        /// Note: that the files must already be present in the files store.
+        /// </param>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> RescanFiles(IList<string> hashList)
+        {
+            if (hashList.Count <= 0)
                 throw new Exception("You have to supply a resource.");
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -96,7 +128,7 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("resource", string.Join(",", resources));
+            request.AddParameter("resource", string.Join(",", hashList));
 
             //Output
             return GetResults<List<ScanResult>>(request);
@@ -104,21 +136,23 @@ namespace VirusTotalNET
 
         /// <summary>
         /// Gets the report of the file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// </summary>
-        /// <param name="file">A list of files that will get hashes and scanned.</param>
-        /// <returns></returns>
-        public List<Report> GetFileReport(params FileInfo[] file)
+        /// <param name="file">The file you wish to get a report on.</param>
+        public Report GetFileReport(FileInfo file)
         {
-            string[] resources = new string[file.Length];
+            return GetFileReports(new[] { file }).First();
+        }
 
-            for (int i = 0; i < file.Length; i++)
-            {
-                FileInfo fileInfo = file[i];
-                if (fileInfo.Exists)
-                    resources[i] = HashHelper.GetSHA256(fileInfo);
-            }
-
-            return GetFileReport(resources);
+        /// <summary>
+        /// Gets a list of reports of the files.
+        /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
+        /// </summary>
+        /// <param name="files">The files you wish to get reports on.</param>
+        public List<Report> GetFileReports(IList<FileInfo> files)
+        {
+            string[] hashes = GetResourcesFromFiles(files);
+            return GetFileReports(hashes);
         }
 
         /// <summary>
@@ -126,11 +160,11 @@ namespace VirusTotalNET
         /// Keep in mind that URLs sent using the API have the lowest scanning priority, depending on VirusTotal's load, it may take several hours before the file is scanned,
         /// so query the report at regular intervals until the result shows up and do not keep submitting the file over and over again.
         /// </summary>
-        /// <param name="resources">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
+        /// <param name="hashList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         /// <returns></returns>
-        public List<Report> GetFileReport(params string[] resources)
+        public List<Report> GetFileReports(IList<string> hashList)
         {
-            if (resources.Length <= 0)
+            if (hashList.Count <= 0)
                 throw new Exception("You have to supply a resource.");
 
             //https://www.virustotal.com/vtapi/v2/file/report
@@ -138,21 +172,55 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("resource", string.Join(",", resources));
+            request.AddParameter("resource", string.Join(",", hashList));
 
             //Output
             return GetResults<List<Report>>(request, true);
         }
 
         /// <summary>
-        /// Scan the given URL. The file will be downloaded by VirusTotal and processed.
+        /// Scan the given URL. The URL will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest report on the URL.
         /// </summary>
-        /// <param name="url">The url to process. You can give multiple URLs to scan in bulk.</param>
-        /// <returns>A list of ScanResult objects with SHA256 and scan ID of each item.</returns>
-        public List<ScanResult> ScanUrl(params string[] url)
+        /// <param name="url">The url to process.</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanUrl(string url)
         {
-            if (url.Length <= 0)
+            return ScanUrl(new Uri(url));
+        }
+
+        /// <summary>
+        /// Scan the given URL. The URL will be downloaded by VirusTotal and processed.
+        /// Note: Before performing your submission, you should retrieve the latest report on the URL.
+        /// </summary>
+        /// <param name="url">The url to process.</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanUrl(Uri url)
+        {
+            return ScanUrls(new[] { url }).First();
+        }
+
+        /// <summary>
+        /// Scan the given URLs. The URLs will be downloaded by VirusTotal and processed.
+        /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
+        /// </summary>
+        /// <param name="urls">The urls to process.</param>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> ScanUrls(IList<string> urls)
+        {
+            Uri[] uris = UrlToUri(urls);
+            return ScanUrls(uris);
+        }
+
+        /// <summary>
+        /// Scan the given URLs. The URLs will be downloaded by VirusTotal and processed.
+        /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
+        /// </summary>
+        /// <param name="urls">The urls to process.</param>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> ScanUrls(IList<Uri> urls)
+        {
+            if (urls.Count <= 0)
                 throw new Exception("You have to supply an URL.");
 
             //https://www.virustotal.com/vtapi/v2/url/scan
@@ -160,27 +228,58 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("url", string.Join(",", url));
+            request.AddParameter("url", string.Join(",", urls));
 
             //Output
             return GetResults<List<ScanResult>>(request);
         }
 
         /// <summary>
-        /// Get a scan report from an URL
+        /// Gets a scan report from an URL
         /// </summary>
-        /// <param name="url">The URL the report represents. Note that you can specify multiple URLs to scan URLs in bulk.</param>
-        /// <returns>A list of Report objects that contain various hashes and scan ID of each item.</returns>
-        public List<Report> GetUrlReport(params string[] url)
+        /// <param name="url">The URL you wish to get the report on.</param>
+        /// <returns>A list of reports</returns>
+        public Report GetUrlReport(string url)
         {
-            if (url.Length <= 0)
+            return GetUrlReport(new Uri(url));
+        }
+
+        /// <summary>
+        /// Gets a scan report from an URL
+        /// </summary>
+        /// <param name="url">The URL you wish to get the report on.</param>
+        /// <returns>A list of reports</returns>
+        public Report GetUrlReport(Uri url)
+        {
+            return GetUrlReports(new[] { url }).First();
+        }
+
+        /// <summary>
+        /// Gets a scan report from a list of URLs
+        /// </summary>
+        /// <param name="urls">The URLs you wish to get the reports on.</param>
+        /// <returns>A list of reports</returns>
+        public List<Report> GetUrlReports(IList<string> urls)
+        {
+            Uri[] uris = UrlToUri(urls);
+            return GetUrlReports(uris);
+        }
+
+        /// <summary>
+        /// Gets a scan report from a list of URLs
+        /// </summary>
+        /// <param name="urls">The URLs you wish to get the reports on.</param>
+        /// <returns>A list of reports</returns>
+        public List<Report> GetUrlReports(IList<Uri> urls)
+        {
+            if (urls.Count <= 0)
                 throw new Exception("You have to supply an URL.");
 
             RestRequest request = new RestRequest("url/report", Method.POST);
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("resource", string.Join(",", url));
+            request.AddParameter("resource", string.Join(",", urls));
 
             //Output
             return GetResults<List<Report>>(request, true);
@@ -212,11 +311,19 @@ namespace VirusTotalNET
             return GetResults<ScanResult>(request);
         }
 
+        /// <summary>
+        /// Gives you a link to a file analysis based on its hash.
+        /// </summary>
+        /// <returns>A link to VirusTotal that contains the report</returns>
         public string GetPublicScanLink(FileInfo file)
         {
             return string.Format("{0}://www.virustotal.com/file/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(file));
         }
 
+        /// <summary>
+        /// Gives you a link to a URL analysis.
+        /// </summary>
+        /// <returns>A link to VirusTotal that contains the report</returns>
         public string GetPublicScanLink(string url)
         {
             return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
@@ -279,6 +386,34 @@ namespace VirusTotalNET
 
             Uri uri = new Uri(url);
             return uri.ToString();
+        }
+
+        private string[] GetResourcesFromFiles(IList<FileInfo> files)
+        {
+            string[] hashes = new string[files.Count];
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                FileInfo fileInfo = files[i];
+
+                if (!fileInfo.Exists)
+                    throw new FileNotFoundException("The file " + fileInfo.FullName + " does not exist.");
+
+                hashes[i] = HashHelper.GetSHA256(fileInfo);
+            }
+
+            return hashes;
+        }
+
+        private static Uri[] UrlToUri(IList<string> urls)
+        {
+            Uri[] uris = new Uri[urls.Count];
+
+            for (int i = 0; i < urls.Count; i++)
+            {
+                uris[i] = new Uri(urls[i]);
+            }
+            return uris;
         }
     }
 }

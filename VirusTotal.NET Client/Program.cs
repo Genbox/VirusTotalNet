@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using VirusTotalNET;
 using VirusTotalNET.Objects;
 
@@ -19,13 +17,12 @@ namespace VirusTotalNETClient
             //Use HTTPS instead of HTTP
             virusTotal.UseTLS = true;
 
-            FileInfo fileInfo = new FileInfo("testfile.txt");
-
-            //Create a new file
-            File.WriteAllText(fileInfo.FullName, "This is a test file!");
+            //Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
+            FileInfo fileInfo = new FileInfo("EICAR.txt");
+            File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
             //Check if the file has been scanned before.
-            Report fileReport = virusTotal.GetFileReport(fileInfo).First();
+            Report fileReport = virusTotal.GetFileReport(fileInfo);
 
             bool hasFileBeenScannedBefore = fileReport.ResponseCode == 1;
 
@@ -44,7 +41,7 @@ namespace VirusTotalNETClient
 
             Console.WriteLine();
 
-            Report urlReport = virusTotal.GetUrlReport(ScanUrl).First();
+            Report urlReport = virusTotal.GetUrlReport(ScanUrl);
 
             bool hasUrlBeenScannedBefore = urlReport.ResponseCode == 1;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
@@ -56,8 +53,8 @@ namespace VirusTotalNETClient
             }
             else
             {
-                List<ScanResult> urlResults = virusTotal.ScanUrl(ScanUrl);
-                urlResults.ForEach(PrintScan);
+                ScanResult urlResult = virusTotal.ScanUrl(ScanUrl);
+                PrintScan(urlResult);
             }
 
             Console.WriteLine("Press a key to continue");
