@@ -18,9 +18,14 @@ namespace VirusTotalNET
         private string _apiKey;
         private bool _useTls;
         private const long FileSizeLimit = 33554432; //32 MB
-        private const int Retry = 3;
-        private int _retryCounter = Retry;
+        private int _retryCounter;
+        private int _retry;
 
+        /// <summary>
+        /// Public constructor for VirusTotal.
+        /// </summary>
+        /// <param name="apiKey">The API key you got from Virus Total</param>
+        /// <exception cref="ArgumentException"></exception>
         public VirusTotal(string apiKey)
         {
             if (string.IsNullOrEmpty(apiKey) || apiKey.Length < 64)
@@ -29,6 +34,8 @@ namespace VirusTotalNET
             _apiKey = apiKey;
             _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
             _client.FollowRedirects = false;
+
+            Retry = 3;
         }
 
         /// <summary>
@@ -48,6 +55,19 @@ namespace VirusTotalNET
         /// Get or set the proxy.
         /// </summary>
         public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
+
+        /// <summary>
+        /// The number of retries to attempt if an serialization error happens.
+        /// </summary>
+        public int Retry
+        {
+            get { return _retry; }
+            set
+            {
+                _retry = value;
+                _retryCounter = value;
+            }
+        }
 
         /// <summary>
         /// Get or set the timeout.
@@ -109,9 +129,9 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> RescanFiles(IList<FileInfo> files)
+        public List<ScanResult> RescanFiles(IEnumerable<FileInfo> files)
         {
-            string[] hashes = GetResourcesFromFiles(files);
+            IEnumerable<string> hashes = GetResourcesFromFiles(files);
             return RescanFiles(hashes);
         }
 
@@ -123,9 +143,11 @@ namespace VirusTotalNET
         /// Note: that the files must already be present in the files store.
         /// </param>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> RescanFiles(IList<string> hashList)
+        public List<ScanResult> RescanFiles(IEnumerable<string> hashList)
         {
-            if (hashList.Count <= 0)
+            IEnumerable<string> hashes = hashList as string[] ?? hashList.ToArray();
+
+            if (!hashes.Any())
                 throw new Exception("You have to supply a resource.");
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -133,7 +155,7 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("resource", string.Join(",", hashList));
+            request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
             return GetResults<List<ScanResult>>(request);
@@ -154,9 +176,9 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
         /// </summary>
         /// <param name="files">The files you wish to get reports on.</param>
-        public List<Report> GetFileReports(IList<FileInfo> files)
+        public List<Report> GetFileReports(IEnumerable<FileInfo> files)
         {
-            string[] hashes = GetResourcesFromFiles(files);
+            IEnumerable<string> hashes = GetResourcesFromFiles(files);
             return GetFileReports(hashes);
         }
 
@@ -167,9 +189,11 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="hashList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         /// <returns></returns>
-        public List<Report> GetFileReports(IList<string> hashList)
+        public List<Report> GetFileReports(IEnumerable<string> hashList)
         {
-            if (hashList.Count <= 0)
+            IEnumerable<string> hashes = hashList as string[] ?? hashList.ToArray();
+
+            if (!hashes.Any())
                 throw new Exception("You have to supply a resource.");
 
             //https://www.virustotal.com/vtapi/v2/file/report
@@ -177,7 +201,7 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("apikey", _apiKey);
-            request.AddParameter("resource", string.Join(",", hashList));
+            request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
             return GetResults<List<Report>>(request, true);
@@ -209,11 +233,11 @@ namespace VirusTotalNET
         /// Scan the given URLs. The URLs will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
         /// </summary>
-        /// <param name="urls">The urls to process.</param>
+        /// <param name="urlList">The urls to process.</param>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> ScanUrls(IList<string> urls)
+        public List<ScanResult> ScanUrls(IEnumerable<string> urlList)
         {
-            Uri[] uris = UrlToUri(urls);
+            IEnumerable<Uri> uris = UrlToUri(urlList);
             return ScanUrls(uris);
         }
 
@@ -221,11 +245,13 @@ namespace VirusTotalNET
         /// Scan the given URLs. The URLs will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
         /// </summary>
-        /// <param name="urls">The urls to process.</param>
+        /// <param name="urlList">The urls to process.</param>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> ScanUrls(IList<Uri> urls)
+        public List<ScanResult> ScanUrls(IEnumerable<Uri> urlList)
         {
-            if (urls.Count <= 0)
+            IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
+
+            if (!urls.Any())
                 throw new Exception("You have to supply an URL.");
 
             //https://www.virustotal.com/vtapi/v2/url/scan
@@ -262,22 +288,24 @@ namespace VirusTotalNET
         /// <summary>
         /// Gets a scan report from a list of URLs
         /// </summary>
-        /// <param name="urls">The URLs you wish to get the reports on.</param>
+        /// <param name="urlList">The URLs you wish to get the reports on.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IList<string> urls)
+        public List<Report> GetUrlReports(IEnumerable<string> urlList)
         {
-            Uri[] uris = UrlToUri(urls);
+            IEnumerable<Uri> uris = UrlToUri(urlList);
             return GetUrlReports(uris);
         }
 
         /// <summary>
         /// Gets a scan report from a list of URLs
         /// </summary>
-        /// <param name="urls">The URLs you wish to get the reports on.</param>
+        /// <param name="urlList">The URLs you wish to get the reports on.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IList<Uri> urls)
+        public List<Report> GetUrlReports(IEnumerable<Uri> urlList)
         {
-            if (urls.Count <= 0)
+            IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
+
+            if (!urls.Any())
                 throw new Exception("You have to supply an URL.");
 
             RestRequest request = new RestRequest("url/report", Method.POST);
@@ -393,13 +421,15 @@ namespace VirusTotalNET
             return uri.ToString();
         }
 
-        private string[] GetResourcesFromFiles(IList<FileInfo> files)
+        private IEnumerable<string> GetResourcesFromFiles(IEnumerable<FileInfo> files)
         {
-            string[] hashes = new string[files.Count];
+            FileInfo[] fileInfos = files as FileInfo[] ?? files.ToArray();
 
-            for (int i = 0; i < files.Count; i++)
+            string[] hashes = new string[fileInfos.Length];
+
+            for (int i = 0; i < fileInfos.Length; i++)
             {
-                FileInfo fileInfo = files[i];
+                FileInfo fileInfo = fileInfos[i];
 
                 if (!fileInfo.Exists)
                     throw new FileNotFoundException("The file " + fileInfo.FullName + " does not exist.");
@@ -410,14 +440,17 @@ namespace VirusTotalNET
             return hashes;
         }
 
-        private static Uri[] UrlToUri(IList<string> urls)
+        private static IEnumerable<Uri> UrlToUri(IEnumerable<string> urls)
         {
-            Uri[] uris = new Uri[urls.Count];
+            string[] enumerable = urls as string[] ?? urls.ToArray();
 
-            for (int i = 0; i < urls.Count; i++)
+            Uri[] uris = new Uri[enumerable.Length];
+
+            for (int i = 0; i < enumerable.Length; i++)
             {
-                uris[i] = new Uri(urls[i]);
+                uris[i] = new Uri(enumerable[i]);
             }
+
             return uris;
         }
     }
