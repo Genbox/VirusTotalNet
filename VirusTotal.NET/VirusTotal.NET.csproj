@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\VirusTotal.NET.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -47,8 +48,9 @@
     <Compile Include="Exceptions\AccessDeniedException.cs" />
     <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
-    <Compile Include="Objects\IResponseCode.cs" />
+    <Compile Include="Objects\ScanResponseCode.cs" />
     <Compile Include="Objects\Report.cs" />
+    <Compile Include="Objects\ReportResponseCode.cs" />
     <Compile Include="Objects\ScanEngine.cs" />
     <Compile Include="Objects\ScanResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

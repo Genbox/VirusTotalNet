@@ -50,6 +50,11 @@ namespace VirusTotalNET
         public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
 
         /// <summary>
+        /// Get or set the timeout.
+        /// </summary>
+        public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
+
+        /// <summary>
         /// Scan a file.
         /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
         /// </summary>

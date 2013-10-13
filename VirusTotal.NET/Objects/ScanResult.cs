@@ -1,13 +1,11 @@
 namespace VirusTotalNET.Objects
 {
-    public class ScanResult : IResponseCode
+    public class ScanResult
     {
         /// <summary>
-        ///  1: The file corresponding to the given hash was successfully queued.
-        /// -1: The file was not present in the store.
-        ///  0: An error occured.
+        /// The scan response code. Use this to determine the status of the scan.
         /// </summary>
-        public int ResponseCode { get; set; }
+        public ScanResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// Contains a verbose message that corrosponds to the reponse code.

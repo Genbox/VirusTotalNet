@@ -24,7 +24,7 @@ namespace VirusTotalNETClient
             //Check if the file has been scanned before.
             Report fileReport = virusTotal.GetFileReport(fileInfo);
 
-            bool hasFileBeenScannedBefore = fileReport.ResponseCode == 1;
+            bool hasFileBeenScannedBefore = fileReport.ResponseCode == ReportResponseCode.Present;
 
             Console.WriteLine("File has been scanned before: " + (hasFileBeenScannedBefore ? "Yes" : "No"));
 
@@ -43,7 +43,7 @@ namespace VirusTotalNETClient
 
             Report urlReport = virusTotal.GetUrlReport(ScanUrl);
 
-            bool hasUrlBeenScannedBefore = urlReport.ResponseCode == 1;
+            bool hasUrlBeenScannedBefore = urlReport.ResponseCode == ReportResponseCode.Present;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
 
             //If the url has been scanned before, the results are embedded inside the report.
@@ -73,7 +73,7 @@ namespace VirusTotalNETClient
             Console.WriteLine("Scan ID: " + report.ScanId);
             Console.WriteLine("Message: " + report.VerboseMsg);
 
-            if (report.ResponseCode == 1)
+            if (report.ResponseCode == ReportResponseCode.Present)
             {
                 foreach (ScanEngine scan in report.Scans)
                 {

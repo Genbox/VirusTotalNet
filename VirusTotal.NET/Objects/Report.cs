@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VirusTotalNET.Objects
 {
-    public class Report : IResponseCode
+    public class Report
     {
         /// <summary>
         /// Filescan Id of the resource.
@@ -61,11 +61,9 @@ namespace VirusTotalNET.Objects
         public List<ScanEngine> Scans { get; set; }
 
         /// <summary>
-        /// 0  : The item you searched for was not present in VirusTotal's dataset.
-        /// -2 : The requested item is still queued for analysis.
-        /// 1  : The item was indeed present and it could be retrieved.
+        /// The response code. Use this to determine the status of the report.
         /// </summary>
-        public int ResponseCode { get; set; }
+        public ReportResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.
