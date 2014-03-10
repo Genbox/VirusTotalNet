@@ -14,8 +14,8 @@ namespace VirusTotalNET
 {
     public partial class VirusTotal
     {
-        private static RestClient _client = new RestClient();
-        private string _apiKey;
+        private static readonly RestClient Client = new RestClient();
+        private readonly string _apiKey;
         private bool _useTls;
         private const long FileSizeLimit = 33554432; //32 MB
         private int _retryCounter;
@@ -32,8 +32,8 @@ namespace VirusTotalNET
                 throw new ArgumentException("You have to set an API key.", "apiKey");
 
             _apiKey = apiKey;
-            _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
-            _client.FollowRedirects = false;
+            Client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
+            Client.FollowRedirects = false;
 
             Retry = 3;
         }
@@ -47,14 +47,14 @@ namespace VirusTotalNET
             set
             {
                 _useTls = value;
-                _client.BaseUrl = value ? _client.BaseUrl.Replace("http://", "https://") : _client.BaseUrl.Replace("https://", "http://");
+                Client.BaseUrl = value ? Client.BaseUrl.Replace("http://", "https://") : Client.BaseUrl.Replace("https://", "http://");
             }
         }
 
         /// <summary>
         /// Get or set the proxy.
         /// </summary>
-        public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
+        public IWebProxy Proxy { get { return Client.Proxy; } set { Client.Proxy = value; } }
 
         /// <summary>
         /// The number of retries to attempt if an serialization error happens.
@@ -72,7 +72,7 @@ namespace VirusTotalNET
         /// <summary>
         /// Get or set the timeout.
         /// </summary>
-        public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
+        public int Timeout { get { return Client.Timeout; } set { Client.Timeout = value; } }
 
         /// <summary>
         /// Scan a file.
@@ -139,16 +139,21 @@ namespace VirusTotalNET
         /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
-        /// <param name="hashList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.
+        /// <param name="resourceList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.
         /// Note: that the files must already be present in the files store.
         /// </param>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> RescanFiles(IEnumerable<string> hashList)
+        public List<ScanResult> RescanFiles(IEnumerable<string> resourceList)
         {
-            IEnumerable<string> hashes = hashList as string[] ?? hashList.ToArray();
+            string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
             if (!hashes.Any())
                 throw new Exception("You have to supply a resource.");
+
+            for (int i = 0; i < hashes.Length; i++)
+            {
+                ValidateResource(hashes[i]);
+            }
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
             RestRequest request = new RestRequest("file/rescan", Method.POST);
@@ -168,7 +173,17 @@ namespace VirusTotalNET
         /// <param name="file">The file you wish to get a report on.</param>
         public Report GetFileReport(FileInfo file)
         {
-            return GetFileReports(new[] { file }).First();
+            return GetFileReport(HashHelper.GetSHA256(file));
+        }
+
+        /// <summary>
+        /// Gets the report of the file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
+        /// </summary>
+        /// <param name="resource">The resource (MD5, SHA1 or SHA256) you wish to get a report on.</param>
+        public Report GetFileReport(string resource)
+        {
+            return GetFileReports(new[] { resource }).First();
         }
 
         /// <summary>
@@ -187,14 +202,19 @@ namespace VirusTotalNET
         /// Keep in mind that URLs sent using the API have the lowest scanning priority, depending on VirusTotal's load, it may take several hours before the file is scanned,
         /// so query the report at regular intervals until the result shows up and do not keep submitting the file over and over again.
         /// </summary>
-        /// <param name="hashList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
+        /// <param name="resourceList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         /// <returns></returns>
-        public List<Report> GetFileReports(IEnumerable<string> hashList)
+        public List<Report> GetFileReports(IEnumerable<string> resourceList)
         {
-            IEnumerable<string> hashes = hashList as string[] ?? hashList.ToArray();
+            string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
             if (!hashes.Any())
-                throw new Exception("You have to supply a resource.");
+                throw new ArgumentException("You have to supply a resource.");
+
+            for (int i = 0; i < hashes.Length; i++)
+            {
+                ValidateResource(hashes[i]);
+            }
 
             //https://www.virustotal.com/vtapi/v2/file/report
             RestRequest request = new RestRequest("file/report", Method.POST);
@@ -326,11 +346,10 @@ namespace VirusTotalNET
         /// <returns>A ScanResult object containing information about the resource.</returns>
         public ScanResult CreateComment(string resource, string comment)
         {
-            if (string.IsNullOrEmpty(resource))
-                throw new ArgumentException("Resource must not be null or empty", "resource");
+            ValidateResource(resource);
 
-            if (string.IsNullOrEmpty(comment))
-                throw new ArgumentException("Comment must not be null or empty", "comment");
+            if (string.IsNullOrWhiteSpace(comment))
+                throw new ArgumentException("Comment must not be null or whitespace", "comment");
 
             //https://www.virustotal.com/vtapi/v2/comments/put
             RestRequest request = new RestRequest("comments/put", Method.POST);
@@ -348,23 +367,34 @@ namespace VirusTotalNET
         /// Gives you a link to a file analysis based on its hash.
         /// </summary>
         /// <returns>A link to VirusTotal that contains the report</returns>
-        public string GetPublicScanLink(FileInfo file)
+        public string GetPublicFileScanLink(string resource)
         {
-            return string.Format("{0}://www.virustotal.com/file/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(file));
+            ValidateResource(resource);
+
+            return string.Format("{0}://www.virustotal.com/file/{1}/analysis/", UseTLS ? "https" : "http", resource);
+        }
+
+        /// <summary>
+        /// Gives you a link to a file analysis based on its hash.
+        /// </summary>
+        /// <returns>A link to VirusTotal that contains the report</returns>
+        public string GetPublicFileScanLink(FileInfo file)
+        {
+            return GetPublicFileScanLink(HashHelper.GetSHA256(file));
         }
 
         /// <summary>
         /// Gives you a link to a URL analysis.
         /// </summary>
         /// <returns>A link to VirusTotal that contains the report</returns>
-        public string GetPublicScanLink(string url)
+        public string GetPublicUrlScanLink(string url)
         {
             return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
         }
 
         private T GetResults<T>(RestRequest request, bool applyHack = false)
         {
-            RestResponse response = (RestResponse)_client.Execute(request);
+            RestResponse response = (RestResponse)Client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
                 throw new RateLimitException("You have reached the 5 requests pr. min. limit of VirusTotal");
@@ -423,35 +453,30 @@ namespace VirusTotalNET
 
         private IEnumerable<string> GetResourcesFromFiles(IEnumerable<FileInfo> files)
         {
-            FileInfo[] fileInfos = files as FileInfo[] ?? files.ToArray();
-
-            string[] hashes = new string[fileInfos.Length];
-
-            for (int i = 0; i < fileInfos.Length; i++)
+            foreach (FileInfo fileInfo in files)
             {
-                FileInfo fileInfo = fileInfos[i];
-
                 if (!fileInfo.Exists)
                     throw new FileNotFoundException("The file " + fileInfo.FullName + " does not exist.");
 
-                hashes[i] = HashHelper.GetSHA256(fileInfo);
+                yield return HashHelper.GetSHA256(fileInfo);
             }
-
-            return hashes;
         }
 
-        private static IEnumerable<Uri> UrlToUri(IEnumerable<string> urls)
+        private IEnumerable<Uri> UrlToUri(IEnumerable<string> urls)
         {
-            string[] enumerable = urls as string[] ?? urls.ToArray();
-
-            Uri[] uris = new Uri[enumerable.Length];
-
-            for (int i = 0; i < enumerable.Length; i++)
+            foreach (string url in urls)
             {
-                uris[i] = new Uri(enumerable[i]);
+                yield return new Uri(url);
             }
+        }
 
-            return uris;
+        private void ValidateResource(string resource)
+        {
+            if (string.IsNullOrWhiteSpace(resource))
+                throw new ArgumentException("Resource must not be null or whitespace", "resource");
+
+            if (resource.Length != 32 && resource.Length != 40 && resource.Length != 64)
+                throw new InvalidResourceException("Resource " + resource + " has to be either a MD5, SHA1 or SHA256");
         }
     }
 }
