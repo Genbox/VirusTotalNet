@@ -402,6 +402,15 @@ namespace VirusTotalNET
             if (response.StatusCode == HttpStatusCode.Forbidden)
                 throw new AccessDeniedException("You don't have access to the service. Make sure your API key is working correctly.");
 
+            if (response.ErrorException != null)
+                throw response.ErrorException;
+
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new Exception("API gave error code " + response.StatusCode);
+
+            if (string.IsNullOrWhiteSpace(response.Content))
+                throw new Exception("There were no content in the response.");
+
             if (applyHack)
             {
                 //Warning: Huge hack... sorry :(
@@ -439,6 +448,7 @@ namespace VirusTotalNET
 
             //reset retry counter
             _retryCounter = Retry;
+
             return results;
         }
 
