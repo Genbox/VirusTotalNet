@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotal.NET", "VirusTotal.NET\VirusTotal.NET.csproj", "{F171FB32-C071-4A38-BA05-61DD8B73723A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotal.NET Client", "VirusTotal.NET Client\VirusTotal.NET Client.csproj", "{397E689E-C8C7-4A00-AF0A-1FCE4C94EB53}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{399F0559-D0C6-480D-A417-FF4324FE6B3A}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -14,20 +10,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{399F05
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotal.NET", "VirusTotal.NET\VirusTotal.NET.csproj", "{B901A554-EB23-436F-8CFB-365F27403F48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotal.NET Client", "VirusTotal.NET Client\VirusTotal.NET Client.csproj", "{ECF2D6FF-A8B2-4CEE-9056-3C51102F75E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F171FB32-C071-4A38-BA05-61DD8B73723A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F171FB32-C071-4A38-BA05-61DD8B73723A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F171FB32-C071-4A38-BA05-61DD8B73723A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F171FB32-C071-4A38-BA05-61DD8B73723A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{397E689E-C8C7-4A00-AF0A-1FCE4C94EB53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{397E689E-C8C7-4A00-AF0A-1FCE4C94EB53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{397E689E-C8C7-4A00-AF0A-1FCE4C94EB53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{397E689E-C8C7-4A00-AF0A-1FCE4C94EB53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B901A554-EB23-436F-8CFB-365F27403F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B901A554-EB23-436F-8CFB-365F27403F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B901A554-EB23-436F-8CFB-365F27403F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B901A554-EB23-436F-8CFB-365F27403F48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECF2D6FF-A8B2-4CEE-9056-3C51102F75E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECF2D6FF-A8B2-4CEE-9056-3C51102F75E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECF2D6FF-A8B2-4CEE-9056-3C51102F75E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECF2D6FF-A8B2-4CEE-9056-3C51102F75E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
