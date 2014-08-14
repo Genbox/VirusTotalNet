@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B901A554-EB23-436F-8CFB-365F27403F48}</ProjectGuid>
+    <ProjectGuid>{F171FB32-C071-4A38-BA05-61DD8B73723A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VirusTotalNET</RootNamespace>
@@ -44,6 +44,7 @@
     <Compile Include="Exceptions\RateLimitException.cs" />
     <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
+    <Compile Include="IVirusTotal.cs" />
     <Compile Include="Objects\Report.cs" />
     <Compile Include="Objects\ReportResponseCode.cs" />
     <Compile Include="Objects\ScanEngine.cs" />

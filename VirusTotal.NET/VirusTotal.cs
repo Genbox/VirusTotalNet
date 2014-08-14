@@ -12,7 +12,7 @@ using VirusTotalNET.Objects;
 
 namespace VirusTotalNET
 {
-    public partial class VirusTotal
+    public partial class VirusTotal : IVirusTotal
     {
         private static readonly RestClient Client = new RestClient();
         private readonly string _apiKey;
