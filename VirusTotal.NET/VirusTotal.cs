@@ -14,7 +14,7 @@ namespace VirusTotalNET
 {
     public partial class VirusTotal
     {
-        private static readonly RestClient Client = new RestClient();
+        private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
         private const long FileSizeLimit = 33554432; //32 MB
@@ -32,14 +32,14 @@ namespace VirusTotalNET
                 throw new ArgumentException("You have to set an API key.", "apiKey");
 
             _apiKey = apiKey;
-            Client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
-            Client.FollowRedirects = false;
+            _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
+            _client.FollowRedirects = false;
 
             Retry = 3;
         }
 
         /// <summary>
-        /// Set to true to use HTTPS instead of HTTP.
+        /// Set to true to use HTTPS instead of HTTP. HTTP is used by default.
         /// </summary>
         public bool UseTLS
         {
@@ -47,17 +47,18 @@ namespace VirusTotalNET
             set
             {
                 _useTls = value;
-                Client.BaseUrl = value ? Client.BaseUrl.Replace("http://", "https://") : Client.BaseUrl.Replace("https://", "http://");
+                _client.BaseUrl = value ? _client.BaseUrl.Replace("http://", "https://") : _client.BaseUrl.Replace("https://", "http://");
             }
         }
 
         /// <summary>
         /// Get or set the proxy.
         /// </summary>
-        public IWebProxy Proxy { get { return Client.Proxy; } set { Client.Proxy = value; } }
+        public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
 
         /// <summary>
         /// The number of retries to attempt if an serialization error happens.
+        /// It is set to 3 by default.
         /// </summary>
         public int Retry
         {
@@ -72,7 +73,7 @@ namespace VirusTotalNET
         /// <summary>
         /// Get or set the timeout.
         /// </summary>
-        public int Timeout { get { return Client.Timeout; } set { Client.Timeout = value; } }
+        public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
 
         /// <summary>
         /// Scan a file.
@@ -85,19 +86,47 @@ namespace VirusTotalNET
             if (!file.Exists)
                 throw new FileNotFoundException("The file was not found.", file.Name);
 
-            //https://www.virustotal.com/vtapi/v2/file/scan
-            RestRequest request = new RestRequest("file/scan", Method.POST);
+            byte[] fileContent = File.ReadAllBytes(file.FullName);
+            return ScanFile(fileContent, file.Name);
+        }
 
-            //Required
-            request.AddParameter("apikey", _apiKey);
+        /// <summary>
+        /// Scan a file.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Note: Ýou are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="file">The file to scan</param>
+        /// <param name="filename">The filename of the file</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanFile(byte[] file, string filename)
+        {
+            if (file == null || file.Length <= 0)
+                throw new ArgumentException("You must provide a file", "file");
 
-            if (file.Length <= FileSizeLimit)
-                request.AddFile("file", file.FullName);
-            else
+            if (file.Length > FileSizeLimit)
                 throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
+
+            //https://www.virustotal.com/vtapi/v2/file/scan
+            RestRequest request = PrepareRequest("file/scan");
+            request.AddFile("file", file, filename);
 
             //Output
             return GetResults<ScanResult>(request);
+        }
+
+        /// <summary>
+        /// Scan multiple files.
+        /// Note: It is highly encouraged to get the report of the files before scanning, in case it they already been scanned before.
+        /// Note: Ýou are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="files">The files you wish to scan. They are a tuple of file content and filename.</param>
+        /// <returns>The scan results.</returns>
+        public IEnumerable<ScanResult> ScanFiles(IEnumerable<Tuple<byte[], string>> files)
+        {
+            foreach (Tuple<byte[], string> fileInfo in files)
+            {
+                yield return ScanFile(fileInfo.Item1, fileInfo.Item2);
+            }
         }
 
         /// <summary>
@@ -118,25 +147,58 @@ namespace VirusTotalNET
         /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
         /// Note: Before requesting a rescan you should retrieve the latest report on the file.
         /// </summary>
+        /// <param name="resource">A hash of the file. It can be an MD5, SHA1 or SHA256</param>
         /// <returns>The scan results.</returns>
-        public ScanResult RescanFile(FileInfo file)
+        public ScanResult RescanFile(string resource)
         {
-            return RescanFiles(new[] { file }).First();
+            return RescanFiles(new[] { resource }).FirstOrDefault();
         }
 
         /// <summary>
         /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the file.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public ScanResult RescanFile(FileInfo file)
+        {
+            return RescanFiles(new[] { file }).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the file.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public ScanResult RescanFile(byte[] file)
+        {
+            return RescanFiles(new[] { file }).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
         public List<ScanResult> RescanFiles(IEnumerable<FileInfo> files)
         {
-            IEnumerable<string> hashes = GetResourcesFromFiles(files);
-            return RescanFiles(hashes);
+            return RescanFiles(GetResourcesFromFiles(files));
         }
 
         /// <summary>
-        /// Tell VirusTotal to rescan a file without sending the actual file to VirusTotal.
+        /// Tell VirusTotal to rescan a file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the files.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> RescanFiles(IEnumerable<byte[]> files)
+        {
+            return RescanFiles(GetResourcesFromFiles(files));
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <param name="resourceList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.
@@ -156,14 +218,23 @@ namespace VirusTotalNET
             }
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            RestRequest request = new RestRequest("file/rescan", Method.POST);
+            RestRequest request = PrepareRequest("file/rescan");
 
             //Required
-            request.AddParameter("apikey", _apiKey);
             request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
             return GetResults<List<ScanResult>>(request);
+        }
+
+        /// <summary>
+        /// Gets the report of the file.
+        /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
+        /// </summary>
+        /// <param name="file">The file you wish to get a report on.</param>
+        public Report GetFileReport(byte[] file)
+        {
+            return GetFileReport(HashHelper.GetSHA256(file));
         }
 
         /// <summary>
@@ -191,10 +262,19 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
         /// </summary>
         /// <param name="files">The files you wish to get reports on.</param>
+        public List<Report> GetFileReports(IEnumerable<byte[]> files)
+        {
+            return GetFileReports(GetResourcesFromFiles(files));
+        }
+
+        /// <summary>
+        /// Gets a list of reports of the files.
+        /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
+        /// </summary>
+        /// <param name="files">The files you wish to get reports on.</param>
         public List<Report> GetFileReports(IEnumerable<FileInfo> files)
         {
-            IEnumerable<string> hashes = GetResourcesFromFiles(files);
-            return GetFileReports(hashes);
+            return GetFileReports(GetResourcesFromFiles(files));
         }
 
         /// <summary>
@@ -217,10 +297,9 @@ namespace VirusTotalNET
             }
 
             //https://www.virustotal.com/vtapi/v2/file/report
-            RestRequest request = new RestRequest("file/report", Method.POST);
+            RestRequest request = PrepareRequest("file/report");
 
             //Required
-            request.AddParameter("apikey", _apiKey);
             request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
@@ -257,8 +336,7 @@ namespace VirusTotalNET
         /// <returns>The scan results.</returns>
         public List<ScanResult> ScanUrls(IEnumerable<string> urlList)
         {
-            IEnumerable<Uri> uris = UrlToUri(urlList);
-            return ScanUrls(uris);
+            return ScanUrls(UrlToUri(urlList));
         }
 
         /// <summary>
@@ -275,10 +353,9 @@ namespace VirusTotalNET
                 throw new Exception("You have to supply an URL.");
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            RestRequest request = new RestRequest("url/scan", Method.POST);
+            RestRequest request = PrepareRequest("url/scan");
 
             //Required
-            request.AddParameter("apikey", _apiKey);
             request.AddParameter("url", string.Join(",", urls));
 
             //Output
@@ -312,8 +389,7 @@ namespace VirusTotalNET
         /// <returns>A list of reports</returns>
         public List<Report> GetUrlReports(IEnumerable<string> urlList)
         {
-            IEnumerable<Uri> uris = UrlToUri(urlList);
-            return GetUrlReports(uris);
+            return GetUrlReports(UrlToUri(urlList));
         }
 
         /// <summary>
@@ -328,14 +404,35 @@ namespace VirusTotalNET
             if (!urls.Any())
                 throw new Exception("You have to supply an URL.");
 
-            RestRequest request = new RestRequest("url/report", Method.POST);
+            RestRequest request = PrepareRequest("url/report");
 
             //Required
-            request.AddParameter("apikey", _apiKey);
             request.AddParameter("resource", string.Join(",", urls));
 
             //Output
             return GetResults<List<Report>>(request, true);
+        }
+
+        /// <summary>
+        /// Creates a comment on a file denoted by its hash and/or scan ID.
+        /// </summary>
+        /// <param name="file">The file you wish to create a comment on</param>
+        /// <param name="comment">The comment you wish to add.</param>
+        /// <returns>A ScanResult object containing information about the resource.</returns>
+        public ScanResult CreateComment(byte[] file, string comment)
+        {
+            return CreateComment(HashHelper.GetSHA256(file), comment);
+        }
+
+        /// <summary>
+        /// Creates a comment on a file denoted by its hash and/or scan ID.
+        /// </summary>
+        /// <param name="file">The file you wish to create a comment on</param>
+        /// <param name="comment">The comment you wish to add.</param>
+        /// <returns>A ScanResult object containing information about the resource.</returns>
+        public ScanResult CreateComment(FileInfo file, string comment)
+        {
+            return CreateComment(HashHelper.GetSHA256(file), comment);
         }
 
         /// <summary>
@@ -352,10 +449,9 @@ namespace VirusTotalNET
                 throw new ArgumentException("Comment must not be null or whitespace", "comment");
 
             //https://www.virustotal.com/vtapi/v2/comments/put
-            RestRequest request = new RestRequest("comments/put", Method.POST);
+            RestRequest request = PrepareRequest("comments/put");
 
             //Required
-            request.AddParameter("apikey", _apiKey);
             request.AddParameter("resource", resource);
             request.AddParameter("comment", comment);
 
@@ -392,9 +488,19 @@ namespace VirusTotalNET
             return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
         }
 
+        private RestRequest PrepareRequest(string path)
+        {
+            RestRequest request = new RestRequest(path, Method.POST);
+
+            //Required
+            request.AddParameter("apikey", _apiKey);
+
+            return request;
+        }
+
         private T GetResults<T>(RestRequest request, bool applyHack = false)
         {
-            RestResponse response = (RestResponse)Client.Execute(request);
+            RestResponse response = (RestResponse)_client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
                 throw new RateLimitException("You have reached the 5 requests pr. min. limit of VirusTotal");
@@ -465,10 +571,15 @@ namespace VirusTotalNET
         {
             foreach (FileInfo fileInfo in files)
             {
-                if (!fileInfo.Exists)
-                    throw new FileNotFoundException("The file " + fileInfo.FullName + " does not exist.");
-
                 yield return HashHelper.GetSHA256(fileInfo);
+            }
+        }
+
+        private IEnumerable<string> GetResourcesFromFiles(IEnumerable<byte[]> files)
+        {
+            foreach (byte[] fileBytes in files)
+            {
+                yield return HashHelper.GetSHA256(fileBytes);
             }
         }
 

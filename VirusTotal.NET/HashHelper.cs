@@ -8,7 +8,7 @@ namespace VirusTotalNET
     {
         public static string GetSHA256(string content)
         {
-            return GetSHA256(Encoding.ASCII.GetBytes(content));
+            return GetSHA256(Encoding.UTF8.GetBytes(content));
         }
 
         public static string GetSHA256(byte[] buffer)
@@ -29,9 +29,32 @@ namespace VirusTotalNET
             return GetSHA256(buffer);
         }
 
+        public static string GetSHA1(string content)
+        {
+            return GetSHA1(Encoding.UTF8.GetBytes(content));
+        }
+
+        public static string GetSHA1(byte[] buffer)
+        {
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                byte[] hashBytes = sha1.ComputeHash(buffer);
+                return ByteArrayToString(hashBytes);
+            }
+        }
+
+        public static string GetSHA1(FileInfo file)
+        {
+            if (!file.Exists)
+                throw new FileNotFoundException("File not found.", file.FullName);
+
+            byte[] buffer = File.ReadAllBytes(file.FullName);
+            return GetSHA1(buffer);
+        }
+
         public static string GetMD5(string content)
         {
-            return GetMD5(Encoding.ASCII.GetBytes(content));
+            return GetMD5(Encoding.UTF8.GetBytes(content));
         }
 
         public static string GetMD5(FileInfo file)
