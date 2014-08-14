@@ -99,6 +99,34 @@ namespace VirusTotalNET
             //Output
             return GetResults<ScanResult>(request);
         }
+        /// <summary>
+        /// Scan a array of bytes.
+        /// </summary>
+        /// <param name="bytes">Array of bytes to be scanned</param>
+        /// <param name="fileName">Filename that will be scanned</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanFile(byte[] bytes, string fileName)
+        {
+            if (bytes == null || (bytes != null && !bytes.Any()))
+                throw new ArgumentException("No bytes received", "bytes");
+
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("File name cannot be empty", "fileName");
+
+            //https://www.virustotal.com/vtapi/v2/file/scan
+            var request = new RestRequest("file/scan", Method.POST);
+
+            //Required
+            request.AddParameter("apikey", _apiKey);
+
+            if (bytes.Length <= FileSizeLimit)
+                request.AddFile("file", bytes, fileName);
+            else
+                throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + bytes.Length / 1024 / 1024 + " MB");
+
+            //Output
+            return GetResults<ScanResult>(request);
+        }
 
         /// <summary>
         /// Scan multiple files.
