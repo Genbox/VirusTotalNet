@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using RestSharp;
@@ -106,6 +107,9 @@ namespace VirusTotalNET
             if (file.Length > FileSizeLimit)
                 throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
 
+            if (string.IsNullOrWhiteSpace(filename))
+                throw new ArgumentException("You must provide a filename. Preferably the original filename.");
+
             //https://www.virustotal.com/vtapi/v2/file/scan
             RestRequest request = PrepareRequest("file/scan");
             request.AddFile("file", file, filename);
@@ -200,6 +204,8 @@ namespace VirusTotalNET
         /// Tell VirusTotal to rescan a file.
         /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
+        /// Note: You can use MD5, SHA1 or SHA256 and even mix them.
+        /// Note: You can only request a maximum of 25 rescans.
         /// </summary>
         /// <param name="resourceList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.
         /// Note: that the files must already be present in the files store.
@@ -211,6 +217,9 @@ namespace VirusTotalNET
 
             if (!hashes.Any())
                 throw new Exception("You have to supply a resource.");
+
+            if (hashes.Length > 25)
+                throw new Exception("Too many hashes. There is a maximum of 25 hashes.");
 
             for (int i = 0; i < hashes.Length; i++)
             {
@@ -314,7 +323,7 @@ namespace VirusTotalNET
         /// <returns>The scan results.</returns>
         public ScanResult ScanUrl(string url)
         {
-            return ScanUrl(new Uri(url));
+            return ScanUrls(UrlToUri(new[] { url })).FirstOrDefault();
         }
 
         /// <summary>
@@ -325,7 +334,7 @@ namespace VirusTotalNET
         /// <returns>The scan results.</returns>
         public ScanResult ScanUrl(Uri url)
         {
-            return ScanUrls(new[] { url }).First();
+            return ScanUrls(new[] { url }).FirstOrDefault();
         }
 
         /// <summary>
@@ -356,7 +365,7 @@ namespace VirusTotalNET
             RestRequest request = PrepareRequest("url/scan");
 
             //Required
-            request.AddParameter("url", string.Join(",", urls));
+            request.AddParameter("url", string.Join(Environment.NewLine, urls));
 
             //Output
             return GetResults<List<ScanResult>>(request);
@@ -366,38 +375,42 @@ namespace VirusTotalNET
         /// Gets a scan report from an URL
         /// </summary>
         /// <param name="url">The URL you wish to get the report on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public Report GetUrlReport(string url)
+        public Report GetUrlReport(string url, bool scanIfNoReport = false)
         {
-            return GetUrlReport(new Uri(url));
+            return GetUrlReports(UrlToUri(new[] { url }), scanIfNoReport).FirstOrDefault();
         }
 
         /// <summary>
         /// Gets a scan report from an URL
         /// </summary>
         /// <param name="url">The URL you wish to get the report on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public Report GetUrlReport(Uri url)
+        public Report GetUrlReport(Uri url, bool scanIfNoReport = false)
         {
-            return GetUrlReports(new[] { url }).First();
+            return GetUrlReports(new[] { url }, scanIfNoReport).First();
         }
 
         /// <summary>
         /// Gets a scan report from a list of URLs
         /// </summary>
         /// <param name="urlList">The URLs you wish to get the reports on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IEnumerable<string> urlList)
+        public List<Report> GetUrlReports(IEnumerable<string> urlList, bool scanIfNoReport = false)
         {
-            return GetUrlReports(UrlToUri(urlList));
+            return GetUrlReports(UrlToUri(urlList), scanIfNoReport);
         }
 
         /// <summary>
         /// Gets a scan report from a list of URLs
         /// </summary>
         /// <param name="urlList">The URLs you wish to get the reports on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IEnumerable<Uri> urlList)
+        public List<Report> GetUrlReports(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
         {
             IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
 
@@ -407,10 +420,65 @@ namespace VirusTotalNET
             RestRequest request = PrepareRequest("url/report");
 
             //Required
-            request.AddParameter("resource", string.Join(",", urls));
+            request.AddParameter("resource", string.Join(Environment.NewLine, urls));
+
+            //Optional
+            if (scanIfNoReport)
+                request.AddParameter("scan", 1);
 
             //Output
             return GetResults<List<Report>>(request, true);
+        }
+
+        /// <summary>
+        /// Gets a scan report from an IP
+        /// </summary>
+        /// <param name="ip">The IP you wish to get the report on.</param>
+        /// <returns>A report</returns>
+        public IPReport GetIPReport(string ip)
+        {
+            return GetIPReport(IPAddress.Parse(ip));
+        }
+
+        /// <summary>
+        /// Gets a scan report from an IP
+        /// </summary>
+        /// <param name="ip">The IP you wish to get the report on.</param>
+        /// <returns>A report</returns>
+        public IPReport GetIPReport(IPAddress ip)
+        {
+            if (ip == null)
+                throw new Exception("You have to supply an IP.");
+
+            if (ip.AddressFamily != AddressFamily.InterNetwork)
+                throw new Exception("Only IPv4 addresses are supported");
+
+            RestRequest request = PrepareRequest("ip-address/report", Method.GET);
+
+            //Required
+            request.AddParameter("ip", ip.ToString());
+
+            //Output
+            return GetResults<IPReport>(request);
+        }
+
+        /// <summary>
+        /// Gets a scan report from a domain
+        /// </summary>
+        /// <param name="domain">The domain you wish to get the report on.</param>
+        /// <returns>A report</returns>
+        public DomainReport GetDomainReport(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+                throw new Exception("You have to supply a domain.");
+
+            RestRequest request = PrepareRequest("domain/report", Method.GET);
+
+            //Required
+            request.AddParameter("domain", domain);
+
+            //Output
+            return GetResults<DomainReport>(request);
         }
 
         /// <summary>
@@ -488,9 +556,9 @@ namespace VirusTotalNET
             return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
         }
 
-        private RestRequest PrepareRequest(string path)
+        private RestRequest PrepareRequest(string path, Method methodType = Method.POST)
         {
-            RestRequest request = new RestRequest(path, Method.POST);
+            RestRequest request = new RestRequest(path, methodType);
 
             //Required
             request.AddParameter("apikey", _apiKey);
@@ -563,8 +631,7 @@ namespace VirusTotalNET
             if (!url.StartsWith("http://") && !url.StartsWith("https://"))
                 url = "http://" + url;
 
-            Uri uri = new Uri(url);
-            return uri.ToString();
+            return new Uri(url).ToString();
         }
 
         private IEnumerable<string> GetResourcesFromFiles(IEnumerable<FileInfo> files)
@@ -587,7 +654,22 @@ namespace VirusTotalNET
         {
             foreach (string url in urls)
             {
-                yield return new Uri(url);
+                Uri uri;
+                try
+                {
+                    string tempUri = url.Trim();
+
+                    if (!tempUri.StartsWith("http://") && !tempUri.StartsWith("https://"))
+                        tempUri = "http://" + tempUri;
+
+                    uri = new Uri(tempUri);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("There was an error converting " + url + " to an uri. See InnerException for details.", ex);
+                }
+
+                yield return uri;
             }
         }
 
@@ -596,8 +678,8 @@ namespace VirusTotalNET
             if (string.IsNullOrWhiteSpace(resource))
                 throw new ArgumentException("Resource must not be null or whitespace", "resource");
 
-            if (resource.Length != 32 && resource.Length != 40 && resource.Length != 64)
-                throw new InvalidResourceException("Resource " + resource + " has to be either a MD5, SHA1 or SHA256");
+            if (resource.Length != 32 && resource.Length != 40 && resource.Length != 64 && resource.Length != 75)
+                throw new InvalidResourceException("Resource " + resource + " has to be either a MD5, SHA1, SHA256 or scan id");
         }
     }
 }
