@@ -11,10 +11,13 @@ namespace VirusTotalNET.Objects
         public string Country { get; set; }
 
         public List<Resolution> Resolutions { get; set; }
+        
+        public List<DetectedUrl> DetectedUrls { get; set; }
 
         /// <summary>
         /// The response code. Use this to determine the status of the report.
         /// </summary>
+        // shouldn't this be IPReportResponseCode??
         public ReportResponseCode ResponseCode { get; set; }
 
         /// <summary>
