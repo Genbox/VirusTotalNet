@@ -2,7 +2,7 @@ using System;
 
 namespace VirusTotalNET.Objects
 {
-    public class Samples
+    public class Sample
     {
         public DateTime Date { get; set; }
         public int Positives { get; set; }

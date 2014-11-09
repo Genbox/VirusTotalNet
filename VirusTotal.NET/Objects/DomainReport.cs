@@ -23,11 +23,11 @@ namespace VirusTotalNET.Objects
 
         public List<string> Categories { get; set; }
 
-        public List<Samples> DetectedCommunicatingSamples { get; set; }
+        public List<Sample> DetectedCommunicatingSamples { get; set; }
 
-        public List<Samples> DetectedDownloadedSamples { get; set; }
+        public List<Sample> DetectedDownloadedSamples { get; set; }
 
-        public List<Samples> DetectedReferrerSamples { get; set; }
+        public List<Sample> DetectedReferrerSamples { get; set; }
 
         public List<DetectedUrl> DetectedUrls { get; set; }
 
@@ -51,11 +51,11 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "TrendMicro category")]
         public string TrendMicroCategory { get; set; }
 
-        public List<Samples> UndetectedCommunicatingSamples { get; set; }
+        public List<Sample> UndetectedCommunicatingSamples { get; set; }
 
-        public List<Samples> UndetectedDownloadedSamples { get; set; }
+        public List<Sample> UndetectedDownloadedSamples { get; set; }
 
-        public List<Samples> UndetectedReferrerSamples { get; set; }
+        public List<Sample> UndetectedReferrerSamples { get; set; }
 
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.

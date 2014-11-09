@@ -19,8 +19,8 @@ namespace UnitTests
         [TestMethod]
         public void GetIPReportKnownIP()
         {
-            IPReport report = _virusTotal.GetIPReport("184.105.139.067"); //google.com
-            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+            IPReport report = _virusTotal.GetIPReport("8.8.8.8"); //Google DNS
+            Assert.AreEqual(IPReportResponseCode.Present, report.ResponseCode);
         }
     }
 }
