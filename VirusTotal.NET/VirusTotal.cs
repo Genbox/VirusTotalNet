@@ -33,7 +33,9 @@ namespace VirusTotalNET
                 throw new ArgumentException("You have to set an API key.", "apiKey");
 
             _apiKey = apiKey;
-            _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
+            // Taking care of RestSharp 104.5->105.0 
+            // https://github.com/restsharp/RestSharp/commit/b15ee7f60b695e0578b6def7a3e1279b62d6fccd
+            _client.BaseUrl = new Uri("http://www.virustotal.com/vtapi/v2/");
             _client.FollowRedirects = false;
 
             Retry = 3;
@@ -48,7 +50,9 @@ namespace VirusTotalNET
             set
             {
                 _useTls = value;
-                _client.BaseUrl = value ? _client.BaseUrl.Replace("http://", "https://") : _client.BaseUrl.Replace("https://", "http://");
+                // Taking care of RestSharp 104.5->105.0 
+                // https://github.com/restsharp/RestSharp/commit/b15ee7f60b695e0578b6def7a3e1279b62d6fccd
+                _client.BaseUrl = value ? new Uri(_client.BaseUrl.ToString().Replace("http://", "https://")) : new Uri(_client.BaseUrl.ToString().Replace("https://", "http://"));
             }
         }
 
