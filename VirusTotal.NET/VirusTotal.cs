@@ -15,6 +15,7 @@ namespace VirusTotalNET
 {
     public partial class VirusTotal
     {
+        private const string ApiUrl = "www.virustotal.com/vtapi/v2/";
         private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
@@ -33,7 +34,7 @@ namespace VirusTotalNET
                 throw new ArgumentException("You have to set an API key.", "apiKey");
 
             _apiKey = apiKey;
-            _client.BaseUrl = "http://www.virustotal.com/vtapi/v2/";
+            _client.BaseUrl = new Uri("http://" + ApiUrl);
             _client.FollowRedirects = false;
 
             Retry = 3;
@@ -48,7 +49,7 @@ namespace VirusTotalNET
             set
             {
                 _useTls = value;
-                _client.BaseUrl = value ? _client.BaseUrl.Replace("http://", "https://") : _client.BaseUrl.Replace("https://", "http://");
+                _client.BaseUrl = value ? new Uri("https://" + ApiUrl) : new Uri("http://" + ApiUrl);
             }
         }
 
