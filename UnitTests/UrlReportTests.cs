@@ -21,8 +21,8 @@ namespace UnitTests
         [TestMethod]
         public void GetReportKnownUrl()
         {
-            Report report = _virusTotal.GetUrlReport("google.com");
-            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+            UrlReport urlReport = _virusTotal.GetUrlReport("google.com");
+            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
         }
 
         [TestMethod]
@@ -30,22 +30,22 @@ namespace UnitTests
         {
             string[] urls = { "google.se", "http://google.com", "https://virustotal.com" };
 
-            List<Report> reports = _virusTotal.GetUrlReports(urls);
+            List<UrlReport> urlReports = _virusTotal.GetUrlReports(urls);
 
-            foreach (Report report in reports)
+            foreach (UrlReport urlReport in urlReports)
             {
-                Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+                Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
             }
         }
 
         [TestMethod]
         public void GetReportUnknownUrl()
         {
-            Report report = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com");
-            Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
+            UrlReport urlReport = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com");
+            Assert.AreEqual(ReportResponseCode.NotPresent, urlReport.ResponseCode);
 
             //We are not supposed to have a scan id
-            Assert.IsTrue(string.IsNullOrWhiteSpace(report.ScanId));
+            Assert.IsTrue(string.IsNullOrWhiteSpace(urlReport.ScanId));
         }
 
         [TestMethod]
@@ -53,31 +53,31 @@ namespace UnitTests
         {
             string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
 
-            List<Report> reports = _virusTotal.GetUrlReports(urls);
+            List<UrlReport> urlReports = _virusTotal.GetUrlReports(urls);
 
-            foreach (Report report in reports)
+            foreach (UrlReport urlReport in urlReports)
             {
-                Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
+                Assert.AreEqual(ReportResponseCode.NotPresent, urlReport.ResponseCode);
             }
         }
 
         [TestMethod]
         public void GetReportForUnknownUrlAndScan()
         {
-            Report report = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com", true);
+            UrlReport urlReport = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com", true);
 
             //It return "present" because we told it to scan it
-            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
 
             //We are supposed to have a scan id because we scanned it
-            Assert.IsFalse(string.IsNullOrWhiteSpace(report.ScanId));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(urlReport.ScanId));
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void GetReportInvalidUrl()
         {
-            Report report = _virusTotal.GetUrlReport(".");
+            UrlReport urlReport = _virusTotal.GetUrlReport(".");
         }
     }
 }

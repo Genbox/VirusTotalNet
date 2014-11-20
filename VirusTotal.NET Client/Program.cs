@@ -22,7 +22,7 @@ namespace VirusTotalNETClient
             File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
             //Check if the file has been scanned before.
-            Report fileReport = virusTotal.GetFileReport(fileInfo);
+            FileReport fileReport = virusTotal.GetFileReport(fileInfo);
 
             bool hasFileBeenScannedBefore = fileReport.ResponseCode == ReportResponseCode.Present;
 
@@ -41,7 +41,7 @@ namespace VirusTotalNETClient
 
             Console.WriteLine();
 
-            Report urlReport = virusTotal.GetUrlReport(ScanUrl);
+            UrlReport urlReport = virusTotal.GetUrlReport(ScanUrl);
 
             bool hasUrlBeenScannedBefore = urlReport.ResponseCode == ReportResponseCode.Present;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
@@ -68,14 +68,30 @@ namespace VirusTotalNETClient
             Console.WriteLine();
         }
 
-        private static void PrintScan(Report report)
+        private static void PrintScan(FileReport fileReport)
         {
-            Console.WriteLine("Scan ID: " + report.ScanId);
-            Console.WriteLine("Message: " + report.VerboseMsg);
+            Console.WriteLine("Scan ID: " + fileReport.ScanId);
+            Console.WriteLine("Message: " + fileReport.VerboseMsg);
 
-            if (report.ResponseCode == ReportResponseCode.Present)
+            if (fileReport.ResponseCode == ReportResponseCode.Present)
             {
-                foreach (ScanEngine scan in report.Scans)
+                foreach (ScanEngine scan in fileReport.Scans)
+                {
+                    Console.WriteLine("{0,-25} Detected: {1}", scan.Name, scan.Detected);
+                }
+            }
+
+            Console.WriteLine();
+        }
+
+        private static void PrintScan(UrlReport urlReport)
+        {
+            Console.WriteLine("Scan ID: " + urlReport.ScanId);
+            Console.WriteLine("Message: " + urlReport.VerboseMsg);
+
+            if (urlReport.ResponseCode == ReportResponseCode.Present)
+            {
+                foreach (ScanEngine scan in urlReport.Scans)
                 {
                     Console.WriteLine("{0,-25} Detected: {1}", scan.Name, scan.Detected);
                 }

@@ -21,6 +21,9 @@ namespace VirusTotalNET
         private int _retryCounter;
         private int _retry;
 
+        /// <summary>
+        /// The limit in bytes that VirusTotal accepts.
+        /// </summary>
         public const long FileSizeLimit = 33553369; //32 MB - 1063 bytes
 
         /// <summary>
@@ -148,7 +151,7 @@ namespace VirusTotalNET
                 throw new ArgumentException("You must provide a file", "file");
 
             if (file.Length > FileSizeLimit)
-                throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + file.Length / 1024 / 1024 + " MB");
+                throw new SizeLimitException(string.Format("The filesize limit on VirusTotal is {0} KB. Your file is {1} KB", FileSizeLimit / 1024, file.Length / 1024));
 
             if (string.IsNullOrWhiteSpace(filename))
                 throw new ArgumentException("You must provide a filename. Preferably the original filename.");
@@ -284,7 +287,7 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// </summary>
         /// <param name="file">The file you wish to get a report on.</param>
-        public Report GetFileReport(byte[] file)
+        public FileReport GetFileReport(byte[] file)
         {
             return GetFileReport(HashHelper.GetSHA256(file));
         }
@@ -294,7 +297,7 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// </summary>
         /// <param name="file">The file you wish to get a report on.</param>
-        public Report GetFileReport(FileInfo file)
+        public FileReport GetFileReport(FileInfo file)
         {
             return GetFileReport(HashHelper.GetSHA256(file));
         }
@@ -304,7 +307,7 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
         /// </summary>
         /// <param name="resource">The resource (MD5, SHA1 or SHA256) you wish to get a report on.</param>
-        public Report GetFileReport(string resource)
+        public FileReport GetFileReport(string resource)
         {
             return GetFileReports(new[] { resource }).First();
         }
@@ -314,7 +317,7 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
         /// </summary>
         /// <param name="files">The files you wish to get reports on.</param>
-        public List<Report> GetFileReports(IEnumerable<byte[]> files)
+        public List<FileReport> GetFileReports(IEnumerable<byte[]> files)
         {
             return GetFileReports(GetResourcesFromFiles(files));
         }
@@ -324,7 +327,7 @@ namespace VirusTotalNET
         /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
         /// </summary>
         /// <param name="files">The files you wish to get reports on.</param>
-        public List<Report> GetFileReports(IEnumerable<FileInfo> files)
+        public List<FileReport> GetFileReports(IEnumerable<FileInfo> files)
         {
             return GetFileReports(GetResourcesFromFiles(files));
         }
@@ -336,7 +339,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="resourceList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         /// <returns></returns>
-        public List<Report> GetFileReports(IEnumerable<string> resourceList)
+        public List<FileReport> GetFileReports(IEnumerable<string> resourceList)
         {
             string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
@@ -355,7 +358,7 @@ namespace VirusTotalNET
             request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
-            return GetResults<List<Report>>(request, true);
+            return GetResults<List<FileReport>>(request, true);
         }
 
         /// <summary>
@@ -420,7 +423,7 @@ namespace VirusTotalNET
         /// <param name="url">The URL you wish to get the report on.</param>
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public Report GetUrlReport(string url, bool scanIfNoReport = false)
+        public UrlReport GetUrlReport(string url, bool scanIfNoReport = false)
         {
             return GetUrlReports(UrlToUri(new[] { url }), scanIfNoReport).FirstOrDefault();
         }
@@ -431,7 +434,7 @@ namespace VirusTotalNET
         /// <param name="url">The URL you wish to get the report on.</param>
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public Report GetUrlReport(Uri url, bool scanIfNoReport = false)
+        public UrlReport GetUrlReport(Uri url, bool scanIfNoReport = false)
         {
             return GetUrlReports(new[] { url }, scanIfNoReport).First();
         }
@@ -442,7 +445,7 @@ namespace VirusTotalNET
         /// <param name="urlList">The URLs you wish to get the reports on.</param>
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IEnumerable<string> urlList, bool scanIfNoReport = false)
+        public List<UrlReport> GetUrlReports(IEnumerable<string> urlList, bool scanIfNoReport = false)
         {
             return GetUrlReports(UrlToUri(urlList), scanIfNoReport);
         }
@@ -453,7 +456,7 @@ namespace VirusTotalNET
         /// <param name="urlList">The URLs you wish to get the reports on.</param>
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
         /// <returns>A list of reports</returns>
-        public List<Report> GetUrlReports(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
+        public List<UrlReport> GetUrlReports(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
         {
             IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
 
@@ -470,7 +473,7 @@ namespace VirusTotalNET
                 request.AddParameter("scan", 1);
 
             //Output
-            return GetResults<List<Report>>(request, true);
+            return GetResults<List<UrlReport>>(request, true);
         }
 
         /// <summary>

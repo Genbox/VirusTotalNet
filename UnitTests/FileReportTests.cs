@@ -25,10 +25,10 @@ namespace UnitTests
             //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
             string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
-            Report report = _virusTotal.GetFileReport(hash);
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
 
             //It should always be in the VirusTotal database.
-            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
         }
 
         [TestMethod]
@@ -45,10 +45,10 @@ namespace UnitTests
             FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
             File.WriteAllText(fileInfo.FullName, guid);
 
-            Report report = _virusTotal.GetFileReport(fileInfo);
+            FileReport fileReport = _virusTotal.GetFileReport(fileInfo);
 
             //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
+            Assert.AreEqual(ReportResponseCode.NotPresent, fileReport.ResponseCode);
         }
 
         [TestMethod]
@@ -69,17 +69,17 @@ namespace UnitTests
             //Attempt to submit it for scan
             ScanResult result = _virusTotal.ScanFile(fileInfo);
 
-            Report report = _virusTotal.GetFileReport(result.ScanId);
+            FileReport fileReport = _virusTotal.GetFileReport(result.ScanId);
 
             //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.AreEqual(ReportResponseCode.StillQueued, report.ResponseCode);
+            Assert.AreEqual(ReportResponseCode.StillQueued, fileReport.ResponseCode);
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidResourceException))]
         public void GetReportForInvalidResource()
         {
-            Report report = _virusTotal.GetFileReport("aaaaaaaaaaa");
+            FileReport fileReport = _virusTotal.GetFileReport("aaaaaaaaaaa");
         }
     }
 }
