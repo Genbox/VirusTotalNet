@@ -15,13 +15,13 @@ namespace VirusTotalNET
 {
     public partial class VirusTotal
     {
-        private const string ApiUrl = "www.virustotal.com/vtapi/v2/";
         private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
-        private const long FileSizeLimit = 33554432; //32 MB
         private int _retryCounter;
         private int _retry;
+
+        public const long FileSizeLimit = 33553369; //32 MB - 1063 bytes
 
         /// <summary>
         /// Public constructor for VirusTotal.
@@ -33,15 +33,16 @@ namespace VirusTotalNET
             if (string.IsNullOrEmpty(apiKey) || apiKey.Length < 64)
                 throw new ArgumentException("You have to set an API key.", "apiKey");
 
+            ApiUrl = "www.virustotal.com/vtapi/v2/";
+            _useTls = true;
             _apiKey = apiKey;
-            _client.BaseUrl = new Uri("http://" + ApiUrl);
             _client.FollowRedirects = false;
 
             Retry = 3;
         }
 
         /// <summary>
-        /// Set to true to use HTTPS instead of HTTP. HTTP is used by default.
+        /// Set to false to use HTTP instead of HTTPS. HTTPS is used by default.
         /// </summary>
         public bool UseTLS
         {
@@ -49,7 +50,18 @@ namespace VirusTotalNET
             set
             {
                 _useTls = value;
-                _client.BaseUrl = value ? new Uri("https://" + ApiUrl) : new Uri("http://" + ApiUrl);
+
+                string oldUrl = ApiUrl;
+
+                if (string.IsNullOrWhiteSpace(oldUrl))
+                    return;
+
+                if (oldUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
+                    oldUrl = oldUrl.Substring(8);
+                else if (oldUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
+                    oldUrl = oldUrl.Substring(7);
+
+                _client.BaseUrl = _useTls ? new Uri("https://" + oldUrl) : new Uri("http://" + oldUrl);
             }
         }
 
@@ -76,6 +88,36 @@ namespace VirusTotalNET
         /// Get or set the timeout.
         /// </summary>
         public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
+
+        /// <summary>
+        /// The URL which the Virus Total service listens on. IF you don't set the scheme to http:// or https:// it will default to https.
+        /// </summary>
+        public string ApiUrl
+        {
+            get { return _client.BaseUrl.ToString(); }
+            set
+            {
+                string newUrl = value.Trim();
+
+                if (string.IsNullOrWhiteSpace(newUrl))
+                    return;
+
+                if (newUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    _useTls = true;
+                    newUrl = newUrl.Substring(8);
+                }
+                else if (newUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    _useTls = false;
+                    newUrl = newUrl.Substring(7);
+                }
+                else
+                    _useTls = true;
+
+                _client.BaseUrl = _useTls ? new Uri("https://" + newUrl) : new Uri("http://" + newUrl);
+            }
+        }
 
         /// <summary>
         /// Scan a file.
@@ -572,7 +614,7 @@ namespace VirusTotalNET
             RestResponse response = (RestResponse)_client.Execute(request);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
-                throw new RateLimitException("You have reached the 5 requests pr. min. limit of VirusTotal");
+                throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
 
             if (response.StatusCode == HttpStatusCode.Forbidden)
                 throw new AccessDeniedException("You don't have access to the service. Make sure your API key is working correctly.");
@@ -629,7 +671,7 @@ namespace VirusTotalNET
 
         private string NormalizeUrl(string url)
         {
-            if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+            if (!url.ToLower().StartsWith("http://") && !url.ToLower().StartsWith("https://"))
                 url = "http://" + url;
 
             return new Uri(url).ToString();
