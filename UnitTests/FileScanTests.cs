@@ -78,6 +78,7 @@ namespace UnitTests
         [TestMethod]
         public void ScanLargeFile2()
         {
+            _virusTotal.Timeout = 1000 * 250;
             _virusTotal.ScanFile(new byte[VirusTotal.FileSizeLimit], "VirusTotal.NET-Test.txt");
         }
     }

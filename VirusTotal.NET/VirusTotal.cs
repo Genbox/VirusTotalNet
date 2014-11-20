@@ -88,7 +88,7 @@ namespace VirusTotalNET
         }
 
         /// <summary>
-        /// Get or set the timeout.
+        /// Get or set the timeout in miliseconds.
         /// </summary>
         public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
 
