@@ -22,11 +22,6 @@ namespace VirusTotalNET
         private int _retry;
 
         /// <summary>
-        /// The limit in bytes that VirusTotal accepts.
-        /// </summary>
-        public const long FileSizeLimit = 33553369; //32 MB - 1063 bytes
-
-        /// <summary>
         /// Public constructor for VirusTotal.
         /// </summary>
         /// <param name="apiKey">The API key you got from Virus Total</param>
@@ -42,7 +37,25 @@ namespace VirusTotalNET
             _client.FollowRedirects = false;
 
             Retry = 3;
+            FileSizeLimit = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total
+            RestrictSizeLimits = true;
+            RestrictNumberOfResources = true;
         }
+
+        /// <summary>
+        /// When true, we check the file size before uploading it to Virus Total. The file size restrictions are based on the Virusl Total public API 2.0 documentation.
+        /// </summary>
+        public bool RestrictSizeLimits { get; set; }
+
+        /// <summary>
+        /// When true, we check the number of resources that are submitted to Virus Total. The limits are according to Virus Total public API 2.0 documentation.
+        /// </summary>
+        public bool RestrictNumberOfResources { get; set; }
+
+        /// <summary>
+        /// The maximum file size (in bytes) that the Virus Total public API 2.0 supports.
+        /// </summary>
+        public long FileSizeLimit { get; set; }
 
         /// <summary>
         /// Set to false to use HTTP instead of HTTPS. HTTPS is used by default.
@@ -150,7 +163,7 @@ namespace VirusTotalNET
             if (file == null || file.Length <= 0)
                 throw new ArgumentException("You must provide a file", "file");
 
-            if (file.Length > FileSizeLimit)
+            if (RestrictSizeLimits && file.Length > FileSizeLimit)
                 throw new SizeLimitException(string.Format("The filesize limit on VirusTotal is {0} KB. Your file is {1} KB", FileSizeLimit / 1024, file.Length / 1024));
 
             if (string.IsNullOrWhiteSpace(filename))
@@ -262,10 +275,10 @@ namespace VirusTotalNET
             string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
             if (!hashes.Any())
-                throw new Exception("You have to supply a resource.");
+                throw new ArgumentException("You have to supply a resource.", "resourceList");
 
-            if (hashes.Length > 25)
-                throw new Exception("Too many hashes. There is a maximum of 25 hashes.");
+            if (RestrictNumberOfResources && hashes.Length > 25)
+                throw new ResourceLimitException("Too many hashes. There is a maximum of 25 hashes.");
 
             for (int i = 0; i < hashes.Length; i++)
             {
@@ -344,7 +357,7 @@ namespace VirusTotalNET
             string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
             if (!hashes.Any())
-                throw new ArgumentException("You have to supply a resource.");
+                throw new ArgumentException("You have to supply a resource.", "resourceList");
 
             for (int i = 0; i < hashes.Length; i++)
             {
@@ -405,7 +418,7 @@ namespace VirusTotalNET
             IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
 
             if (!urls.Any())
-                throw new Exception("You have to supply an URL.");
+                throw new ArgumentException("You have to supply an URL.", "urlList");
 
             //https://www.virustotal.com/vtapi/v2/url/scan
             RestRequest request = PrepareRequest("url/scan");
@@ -461,7 +474,7 @@ namespace VirusTotalNET
             IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
 
             if (!urls.Any())
-                throw new Exception("You have to supply an URL.");
+                throw new ArgumentException("You have to supply an URL.", "urlList");
 
             RestRequest request = PrepareRequest("url/report");
 
@@ -494,10 +507,10 @@ namespace VirusTotalNET
         public IPReport GetIPReport(IPAddress ip)
         {
             if (ip == null)
-                throw new Exception("You have to supply an IP.");
+                throw new ArgumentNullException("ip", "You have to supply an IP.");
 
             if (ip.AddressFamily != AddressFamily.InterNetwork)
-                throw new Exception("Only IPv4 addresses are supported");
+                throw new ArgumentException("Only IPv4 addresses are supported", "ip");
 
             RestRequest request = PrepareRequest("ip-address/report", Method.GET);
 
@@ -516,7 +529,7 @@ namespace VirusTotalNET
         public DomainReport GetDomainReport(string domain)
         {
             if (string.IsNullOrWhiteSpace(domain))
-                throw new Exception("You have to supply a domain.");
+                throw new ArgumentException("You have to supply a domain.", "domain");
 
             RestRequest request = PrepareRequest("domain/report", Method.GET);
 

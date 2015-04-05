@@ -72,14 +72,14 @@ namespace UnitTests
         public void ScanLargeFile()
         {
             //We expect it to throw a SizeLimitException because the file is above the legal limit
-            _virusTotal.ScanFile(new byte[VirusTotal.FileSizeLimit + 1], "VirusTotal.NET-Test.txt");
+            _virusTotal.ScanFile(new byte[_virusTotal.FileSizeLimit + 1], "VirusTotal.NET-Test.txt");
         }
 
         [TestMethod]
         public void ScanLargeFile2()
         {
             _virusTotal.Timeout = 1000 * 250;
-            _virusTotal.ScanFile(new byte[VirusTotal.FileSizeLimit], "VirusTotal.NET-Test.txt");
+            _virusTotal.ScanFile(new byte[_virusTotal.FileSizeLimit], "VirusTotal.NET-Test.txt");
         }
     }
 }

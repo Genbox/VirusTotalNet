@@ -3,7 +3,7 @@
 namespace VirusTotalNET.Exceptions
 {
     /// <summary>
-    /// Exception that is thrown when the file size exceeds 32 MB.
+    /// Exception that is thrown when the file size exceeds the allowed.
     /// </summary>
     public class SizeLimitException : Exception
     {

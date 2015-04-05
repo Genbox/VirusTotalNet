@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\AccessDeniedException.cs" />
+    <Compile Include="Exceptions\ResourceLimitException.cs" />
     <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Exceptions\InvalidResourceException.cs" />
