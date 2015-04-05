@@ -146,8 +146,8 @@ namespace VirusTotalNET
             if (!file.Exists)
                 throw new FileNotFoundException("The file was not found.", file.Name);
 
-            byte[] fileContent = File.ReadAllBytes(file.FullName);
-            return ScanFile(fileContent, file.Name);
+            using (FileStream stream = file.OpenRead())
+                return ScanFile(stream, file.Name);
         }
 
         /// <summary>
@@ -160,18 +160,32 @@ namespace VirusTotalNET
         /// <returns>The scan results.</returns>
         public ScanResult ScanFile(byte[] file, string filename)
         {
-            if (file == null || file.Length <= 0)
-                throw new ArgumentException("You must provide a file", "file");
+            using (MemoryStream stream = new MemoryStream(file))
+                return ScanFile(stream, filename);
+        }
 
-            if (RestrictSizeLimits && file.Length > FileSizeLimit)
-                throw new SizeLimitException(string.Format("The filesize limit on VirusTotal is {0} KB. Your file is {1} KB", FileSizeLimit / 1024, file.Length / 1024));
+        /// <summary>
+        /// Scan a file.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Note: Ýou are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="fileStream">The file to scan</param>
+        /// <param name="filename">The filename of the file</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanFile(Stream fileStream, string filename)
+        {
+            if (fileStream == null || fileStream.Length <= 0)
+                throw new ArgumentException("You must provide a file", "fileStream");
+
+            if (RestrictSizeLimits && fileStream.Length > FileSizeLimit)
+                throw new SizeLimitException(string.Format("The filesize limit on VirusTotal is {0} KB. Your file is {1} KB", FileSizeLimit / 1024, fileStream.Length / 1024));
 
             if (string.IsNullOrWhiteSpace(filename))
                 throw new ArgumentException("You must provide a filename. Preferably the original filename.");
 
             //https://www.virustotal.com/vtapi/v2/file/scan
             RestRequest request = PrepareRequest("file/scan");
-            request.AddFile("file", file, filename);
+            request.AddFile("file", fileStream.CopyTo, filename);
 
             //Output
             return GetResults<ScanResult>(request);
@@ -188,7 +202,23 @@ namespace VirusTotalNET
         {
             foreach (Tuple<byte[], string> fileInfo in files)
             {
-                yield return ScanFile(fileInfo.Item1, fileInfo.Item2);
+                using (MemoryStream stream = new MemoryStream(fileInfo.Item1))
+                    yield return ScanFile(stream, fileInfo.Item2);
+            }
+        }
+
+        /// <summary>
+        /// Scan multiple files.
+        /// Note: It is highly encouraged to get the report of the files before scanning, in case it they already been scanned before.
+        /// Note: Ýou are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="streams">The streams you wish to scan. They are a tuple of stream and filename.</param>
+        /// <returns>The scan results.</returns>
+        public IEnumerable<ScanResult> ScanFiles(IEnumerable<Tuple<Stream, string>> streams)
+        {
+            foreach (Tuple<Stream, string> stream in streams)
+            {
+                yield return ScanFile(stream.Item1, stream.Item2);
             }
         }
 
@@ -243,7 +273,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> RescanFiles(IEnumerable<FileInfo> files)
+        public List<ScanResult> RescanFiles(IEnumerable<byte[]> files)
         {
             return RescanFiles(GetResourcesFromFiles(files));
         }
@@ -254,9 +284,20 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public List<ScanResult> RescanFiles(IEnumerable<byte[]> files)
+        public List<ScanResult> RescanFiles(IEnumerable<FileInfo> files)
         {
             return RescanFiles(GetResourcesFromFiles(files));
+        }
+
+        /// <summary>
+        /// Tell VirusTotal to rescan a file.
+        /// Note: This does not send the content of the streams to VirusTotal. It hashes the content and sends that instead.
+        /// Note: Before requesting a rescan you should retrieve the latest report on the files.
+        /// </summary>
+        /// <returns>The scan results.</returns>
+        public List<ScanResult> RescanFiles(IEnumerable<Stream> streams)
+        {
+            return RescanFiles(GetResourcesFromFiles(streams));
         }
 
         /// <summary>
@@ -343,6 +384,16 @@ namespace VirusTotalNET
         public List<FileReport> GetFileReports(IEnumerable<FileInfo> files)
         {
             return GetFileReports(GetResourcesFromFiles(files));
+        }
+
+        /// <summary>
+        /// Gets a list of reports of the files.
+        /// Note: This does not send the content of the streams to VirusTotal. It hashes the content of the stream and sends that instead.
+        /// </summary>
+        /// <param name="streams">The streams you wish to get reports on.</param>
+        public List<FileReport> GetFileReports(IEnumerable<Stream> streams)
+        {
+            return GetFileReports(GetResourcesFromFiles(streams));
         }
 
         /// <summary>
@@ -706,6 +757,14 @@ namespace VirusTotalNET
             foreach (byte[] fileBytes in files)
             {
                 yield return HashHelper.GetSHA256(fileBytes);
+            }
+        }
+
+        private IEnumerable<string> GetResourcesFromFiles(IEnumerable<Stream> streams)
+        {
+            foreach (Stream stream in streams)
+            {
+                yield return HashHelper.GetSHA256(stream);
             }
         }
 
