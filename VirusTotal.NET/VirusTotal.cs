@@ -18,8 +18,6 @@ namespace VirusTotalNET
         private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
-        private int _retryCounter;
-        private int _retry;
 
         /// <summary>
         /// Public constructor for VirusTotal.
@@ -36,7 +34,6 @@ namespace VirusTotalNET
             _apiKey = apiKey;
             _client.FollowRedirects = false;
 
-            Retry = 3;
             FileSizeLimit = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total
             RestrictSizeLimits = true;
             RestrictNumberOfResources = true;
@@ -85,20 +82,6 @@ namespace VirusTotalNET
         /// Get or set the proxy.
         /// </summary>
         public IWebProxy Proxy { get { return _client.Proxy; } set { _client.Proxy = value; } }
-
-        /// <summary>
-        /// The number of retries to attempt if an serialization error happens.
-        /// It is set to 3 by default.
-        /// </summary>
-        public int Retry
-        {
-            get { return _retry; }
-            set
-            {
-                _retry = value;
-                _retryCounter = value;
-            }
-        }
 
         /// <summary>
         /// Get or set the timeout in miliseconds.
@@ -705,33 +688,7 @@ namespace VirusTotalNET
 
             IDeserializer deserializer = new JsonDeserializer();
             T results;
-
-            try
-            {
                 results = deserializer.Deserialize<T>(response);
-            }
-            catch (SerializationException)
-            {
-                //retry request.
-                try
-                {
-                    _retryCounter--;
-
-                    if (_retryCounter <= 0)
-                    {
-                        _retryCounter = Retry;
-                        return default(T);
-                    }
-                    results = GetResults<T>(request, applyHack);
-                }
-                catch (SerializationException ex)
-                {
-                    throw new Exception("Failed to deserialize request.", ex);
-                }
-            }
-
-            //reset retry counter
-            _retryCounter = Retry;
 
             return results;
         }
