@@ -695,10 +695,8 @@ namespace VirusTotalNET
 
         private string NormalizeUrl(string url)
         {
-            if (!url.ToLower().StartsWith("http://") && !url.ToLower().StartsWith("https://"))
-                url = "http://" + url;
-
-            return new Uri(url).ToString();
+            Uri uri = CreateUri(url);
+            return uri.ToString();
         }
 
         private IEnumerable<string> GetResourcesFromFiles(IEnumerable<FileInfo> files)
@@ -732,12 +730,7 @@ namespace VirusTotalNET
                 Uri uri;
                 try
                 {
-                    string tempUri = url.Trim();
-
-                    if (!tempUri.StartsWith("http://") && !tempUri.StartsWith("https://"))
-                        tempUri = "http://" + tempUri;
-
-                    uri = new Uri(tempUri);
+                    uri = CreateUri(url);
                 }
                 catch (Exception ex)
                 {
@@ -746,6 +739,17 @@ namespace VirusTotalNET
 
                 yield return uri;
             }
+        }
+
+        private Uri CreateUri(string url)
+        {
+            string tempUri = url.Trim();
+            string lowered = tempUri.ToLower();
+
+            if (!lowered.StartsWith("http://") && !lowered.StartsWith("https://"))
+                tempUri = "http://" + tempUri;
+
+            return new Uri(tempUri);
         }
 
         private void ValidateResource(string resource)
