@@ -43,7 +43,7 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// The scan results from each engine.
         /// </summary>
-        public List<ScanEngine> Scans { get; set; }
+        public Dictionary<string, ScanEngine> Scans { get; set; }
 
         /// <summary>
         /// SHA1 hash of the resource.

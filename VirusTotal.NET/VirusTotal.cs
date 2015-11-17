@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using RestSharp;
 using RestSharp.Deserializers;
 using VirusTotalNET.Exceptions;
@@ -405,7 +403,7 @@ namespace VirusTotalNET
             request.AddParameter("resource", string.Join(",", hashes));
 
             //Output
-            return GetResults<List<FileReport>>(request, true);
+            return GetResults<List<FileReport>>(request);
         }
 
         /// <summary>
@@ -520,7 +518,7 @@ namespace VirusTotalNET
                 request.AddParameter("scan", 1);
 
             //Output
-            return GetResults<List<UrlReport>>(request, true);
+            return GetResults<List<UrlReport>>(request);
         }
 
         /// <summary>
@@ -659,7 +657,7 @@ namespace VirusTotalNET
             return request;
         }
 
-        private T GetResults<T>(RestRequest request, bool applyHack = false)
+        private T GetResults<T>(RestRequest request)
         {
             RestResponse response = (RestResponse)_client.Execute(request);
 
@@ -678,19 +676,9 @@ namespace VirusTotalNET
             if (string.IsNullOrWhiteSpace(response.Content))
                 throw new Exception("There were no content in the response.");
 
-            if (applyHack)
-            {
-                //Warning: Huge hack... sorry :(
-                response.Content = Regex.Replace(response.Content, "\"([\\w\\d -\\._]+)\": \\{\"detected\":", "{\"name\": \"$1\", \"detected\":", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-                response.Content = response.Content.Replace("scans\": {", "scans\": [");
-                response.Content = response.Content.Replace("}}", "}]");
-            }
-
             IDeserializer deserializer = new JsonDeserializer();
-            T results;
-                results = deserializer.Deserialize<T>(response);
 
-            return results;
+            return deserializer.Deserialize<T>(response);
         }
 
         private string NormalizeUrl(string url)

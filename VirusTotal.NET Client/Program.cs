@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using VirusTotalNET;
@@ -75,9 +76,9 @@ namespace VirusTotalNETClient
 
             if (fileReport.ResponseCode == ReportResponseCode.Present)
             {
-                foreach (ScanEngine scan in fileReport.Scans)
+                foreach (KeyValuePair<string, ScanEngine> scan in fileReport.Scans)
                 {
-                    Console.WriteLine("{0,-25} Detected: {1}", scan.Name, scan.Detected);
+                    Console.WriteLine("{0,-25} Detected: {1}", scan.Key, scan.Value.Detected);
                 }
             }
 
@@ -91,9 +92,9 @@ namespace VirusTotalNETClient
 
             if (urlReport.ResponseCode == ReportResponseCode.Present)
             {
-                foreach (ScanEngine scan in urlReport.Scans)
+                foreach (KeyValuePair<string, ScanEngine> scan in urlReport.Scans)
                 {
-                    Console.WriteLine("{0,-25} Detected: {1}", scan.Name, scan.Detected);
+                    Console.WriteLine("{0,-25} Detected: {1}", scan.Key, scan.Value.Detected);
                 }
             }
 

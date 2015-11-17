@@ -7,11 +7,6 @@ namespace VirusTotalNET.Objects
 	public class ScanEngine
 	{
         /// <summary>
-        /// The name of the engine.
-        /// </summary>
-		public string Name { get; set; }
-
-        /// <summary>
         /// True if the engine flagged the resource.
         /// </summary>
 		public bool Detected { get; set; }
