@@ -29,6 +29,10 @@ namespace UnitTests
         {
             DomainReport report = _virusTotal.GetDomainReport("fenggui.f3322.net");
             Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+
+            Assert.AreEqual(99, report.Subdomains.Count);
+            Assert.AreEqual(1, report.DetectedCommunicatingSamples.Count);
+            Assert.AreEqual(1, report.DetectedUrls.Count);
         }
 
         [TestMethod]
