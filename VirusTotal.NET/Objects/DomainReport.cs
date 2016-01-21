@@ -46,6 +46,7 @@ namespace VirusTotalNET.Objects
         /// </summary>
         public ReportResponseCode ResponseCode { get; set; }
 
+        [DeserializeAs(Name = "domain_siblings")]
         public List<string> Subdomains { get; set; }
 
         [DeserializeAs(Name = "TrendMicro category")]
