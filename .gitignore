@@ -1,5 +1,5 @@
 ## Do not grab developer's App.config
-*.config
+UnitTests/App.config
 
 #################
 ## Eclipse
