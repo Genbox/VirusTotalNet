@@ -41,8 +41,8 @@ namespace UnitTests
         [TestMethod]
         public void GetDomainReportInvalidDomain()
         {
-            DomainReport report = _virusTotal.GetDomainReport(".");
-            Assert.AreEqual(ReportResponseCode.Error, report.ResponseCode);
+            DomainReport report = _virusTotal.GetDomainReport("asdfasdfas");
+            Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
         }
     }
 }
