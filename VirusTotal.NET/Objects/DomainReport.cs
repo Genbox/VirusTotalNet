@@ -74,10 +74,18 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "whois_timestamp")]
         public string WhoIsTimestamp { get; set; }
 
-        public DateTime WhoIsDateTime
+        public DateTime? WhoIsDateTime
         {
-            get { return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp)); }
-            set { WhoIsTimestamp = UnixTimeHelper.FromDateTime(value).ToString(); }
+            get {
+                if (WhoIsTimestamp != null)
+                {
+                    return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         [DeserializeAs(Name = "WOT domain info")]
