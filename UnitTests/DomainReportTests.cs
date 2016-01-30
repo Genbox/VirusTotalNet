@@ -25,6 +25,17 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void GetDomainReportKnownDomain2()
+        {
+            DomainReport report = _virusTotal.GetDomainReport("fenggui.f3322.net");
+            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+
+            Assert.AreEqual(99, report.Subdomains.Count);
+            Assert.AreEqual(1, report.DetectedCommunicatingSamples.Count);
+            Assert.AreEqual(1, report.DetectedUrls.Count);
+        }
+
+        [TestMethod]
         public void GetDomainReportUnknownDomain()
         {
             DomainReport report = _virusTotal.GetDomainReport(Guid.NewGuid() + ".com");
@@ -34,8 +45,8 @@ namespace UnitTests
         [TestMethod]
         public void GetDomainReportInvalidDomain()
         {
-            DomainReport report = _virusTotal.GetDomainReport(".");
-            Assert.AreEqual(ReportResponseCode.Error, report.ResponseCode);
+            DomainReport report = _virusTotal.GetDomainReport("asdfasdfas");
+            Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
         }
     }
 }

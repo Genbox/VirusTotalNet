@@ -21,14 +21,19 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "BitDefender domain info")]
         public string BitDefenderDomainInfo { get; set; }
 
+        [DeserializeAs(Name = "categories")]
         public List<string> Categories { get; set; }
 
+        [DeserializeAs(Name = "detected_communicating_samples")]
         public List<Sample> DetectedCommunicatingSamples { get; set; }
 
+        [DeserializeAs(Name = "detected_downloaded_samples")]
         public List<Sample> DetectedDownloadedSamples { get; set; }
 
+        [DeserializeAs(Name = "detected_referrer_samples")]
         public List<Sample> DetectedReferrerSamples { get; set; }
 
+        [DeserializeAs(Name = "detected_urls")]
         public List<DetectedUrl> DetectedUrls { get; set; }
 
         [DeserializeAs(Name = "Dr.Web category")]
@@ -37,26 +42,34 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "Opera domain info")]
         public string OperaDomainInfo { get; set; }
 
+        [DeserializeAs(Name = "pcaps")]
         public List<string> Pcaps { get; set; }
 
+        [DeserializeAs(Name = "resolutions")]
         public List<Resolution> Resolutions { get; set; }
 
+        [DeserializeAs(Name = "response_code")]
         /// <summary>
         /// The response code. Use this to determine the status of the report.
         /// </summary>
         public ReportResponseCode ResponseCode { get; set; }
 
+        [DeserializeAs(Name = "domain_siblings")]
         public List<string> Subdomains { get; set; }
 
         [DeserializeAs(Name = "TrendMicro category")]
         public string TrendMicroCategory { get; set; }
 
+        [DeserializeAs(Name = "undetected_communicating_samples")]
         public List<Sample> UndetectedCommunicatingSamples { get; set; }
 
+        [DeserializeAs(Name = "undetected_downloaded_samples")]
         public List<Sample> UndetectedDownloadedSamples { get; set; }
 
+        [DeserializeAs(Name = "undetected_referrer_samples")]
         public List<Sample> UndetectedReferrerSamples { get; set; }
 
+        [DeserializeAs(Name = "verbose_msg")]
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.
         /// </summary>
@@ -74,10 +87,18 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "whois_timestamp")]
         public string WhoIsTimestamp { get; set; }
 
-        public DateTime WhoIsDateTime
+        public DateTime? WhoIsDateTime
         {
-            get { return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp)); }
-            set { WhoIsTimestamp = UnixTimeHelper.FromDateTime(value).ToString(); }
+            get {
+                if (WhoIsTimestamp != null)
+                {
+                    return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         [DeserializeAs(Name = "WOT domain info")]

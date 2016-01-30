@@ -1,3 +1,9 @@
+## Do not grab developer's App.config
+UnitTests/App.config
+
+## Do not grab NuGet packages
+**/*.nupkg
+
 #################
 ## Eclipse
 #################

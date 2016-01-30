@@ -48,3 +48,6 @@ Scan finished, scan information embedded in this object
 ```
 
 For more examples, take a look at the VirusTotal.NET Client included in the project.
+
+### Additional Contributors:
+* Keith J. Jones - https://github.com/keithjjones/VirusTotal.NET

@@ -98,6 +98,15 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>if "$(ConfigurationName)" == "Release" goto PACK
+goto END
+:PACK
+pushd "$(ProjectDir)"
+md "$(SolutionDir)nuget"
+nuget.exe pack "$(ProjectFileName)" -Prop Configuration=Release;Platform=AnyCPU -o "$(SolutionDir)nuget"
+:END</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
