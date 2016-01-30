@@ -50,4 +50,4 @@ Scan finished, scan information embedded in this object
 For more examples, take a look at the VirusTotal.NET Client included in the project.
 
 ### Contributors
-@keithjjones
+[keithjjones](https://github.com/keithjjones)
