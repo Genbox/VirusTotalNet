@@ -46,6 +46,7 @@ namespace VirusTotalNET.Objects
         /// </summary>
         public ReportResponseCode ResponseCode { get; set; }
 
+        [DeserializeAs(Name = "domain_siblings")]
         public List<string> Subdomains { get; set; }
 
         [DeserializeAs(Name = "TrendMicro category")]
@@ -74,10 +75,15 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "whois_timestamp")]
         public string WhoIsTimestamp { get; set; }
 
-        public DateTime WhoIsDateTime
+        public DateTime? WhoIsDateTime
         {
-            get { return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp)); }
-            set { WhoIsTimestamp = UnixTimeHelper.FromDateTime(value).ToString(); }
+            get
+            {
+                if (string.IsNullOrWhiteSpace(WhoIsTimestamp))
+                    return null;
+
+                return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
+            }
         }
 
         [DeserializeAs(Name = "WOT domain info")]

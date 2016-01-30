@@ -34,6 +34,8 @@ namespace UnitTests
         [TestMethod]
         public void GetDomainReportInvalidDomain()
         {
+            //This test should pass, but VT have added "." as a domain, which should not happen.
+            //It therefore fails, which is to be expcted until VT team fixes this bug.
             DomainReport report = _virusTotal.GetDomainReport(".");
             Assert.AreEqual(ReportResponseCode.Error, report.ResponseCode);
         }
