@@ -14,7 +14,7 @@ namespace VirusTotalNET.Objects
     /// </summary>
     public class FileReportAdditionalInfo
     {
-        public List<FileReportsAutoStart> Autostart { get; set; }
+        public List<FileReportAutoStart> Autostart { get; set; }
 
         public List<string> CompressedParents { get; set; }
 
@@ -22,7 +22,7 @@ namespace VirusTotalNET.Objects
 
         public List<string> EmailParents { get; set; }
 
-        public FileReportsExifTool ExifTool { get; set; }
+        public FileReportExifTool ExifTool { get; set; }
 
         public string FirstSeenITW { get; set; }
 

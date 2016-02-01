@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace VirusTotalNET.Objects
 {
-    public class FileReportsExifTool
+    public class FileReportExifTool
     {
         // These will be strings until I find a better way to parse them.
         public string FileAccessDate { get; set; }

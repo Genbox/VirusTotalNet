@@ -11,7 +11,7 @@ namespace VirusTotalNET.Objects
     /// <summary>
     /// Class for private API file reports
     /// </summary>
-    public class FileReportsAutoStart
+    public class FileReportAutoStart
     {
         public string Entry { get; set; }
         public string Location { get; set; }
