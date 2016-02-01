@@ -30,6 +30,7 @@ namespace UnitTests
 
             //It should always be in the VirusTotal database.
             Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNull(fileReport.AdditionalInfo);
         }
 
         // Copyright Keith J. Jones © 2016
@@ -45,6 +46,7 @@ namespace UnitTests
 
             //It should always be in the VirusTotal database.
             Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNotNull(fileReport.AdditionalInfo);
 
             _virusTotal.IsPrivateKey = false;
         }
