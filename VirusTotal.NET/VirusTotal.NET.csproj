@@ -66,6 +66,7 @@
     <Compile Include="Objects\FileReportDetailedEmailParents.cs" />
     <Compile Include="Objects\FileReportsAutoStart.cs" />
     <Compile Include="Objects\FileReportsExifTool.cs" />
+    <Compile Include="Objects\FileReportSigCheck.cs" />
     <Compile Include="Objects\IPReport.cs" />
     <Compile Include="Objects\DomainReport.cs" />
     <Compile Include="Objects\IPReportResponseCode.cs" />

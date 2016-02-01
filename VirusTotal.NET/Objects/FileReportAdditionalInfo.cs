@@ -36,5 +36,9 @@ namespace VirusTotalNET.Objects
         public List<string> PEResourceParents { get; set; }
 
         public float PositivesDelta { get; set; }
+
+        public string TRId { get; set; }
+
+        public FileReportSigCheck SigCheck { get; set; }
     }
 }
