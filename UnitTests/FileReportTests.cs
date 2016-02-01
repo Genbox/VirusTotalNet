@@ -17,6 +17,8 @@ namespace UnitTests
         public static void Initialize(TestContext context)
         {
             _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
+            // Copyright Keith J. Jones © 2016
+            _virusTotal.IsPrivateKey = true;
         }
 
         [TestMethod]
