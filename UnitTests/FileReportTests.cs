@@ -51,6 +51,24 @@ namespace UnitTests
             _virusTotal.IsPrivateKey = false;
         }
 
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetPrivateReportForKnownFileWithBehaviour()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            // This hash has known behaviour data
+            string hash = "44cda81782dc2a346abd7b2285530c5f";
+
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
+
+            //It should always be in the VirusTotal database.
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNotNull(fileReport.AdditionalInfo);
+
+            _virusTotal.IsPrivateKey = false;
+        }
+
         [TestMethod]
         public void GetMultipleReportForKnownFile()
         {
