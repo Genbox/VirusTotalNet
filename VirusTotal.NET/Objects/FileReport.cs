@@ -87,14 +87,29 @@ namespace VirusTotalNET.Objects
         /// </summary>
         public FileReportAdditionalInfo AdditionalInfo { get; set; }
 
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
         public float CommunityReputation { get; set; }
 
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
         public DateTime FirstSeen { get; set; }
 
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
         public float HarmlessVotes { get; set; }
 
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
         public DateTime LastSeen { get; set; }
 
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
         public string MaliciousVotes { get; set; }
 
     }

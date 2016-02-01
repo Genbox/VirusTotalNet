@@ -64,6 +64,7 @@
     <Compile Include="Exceptions\InvalidResourceException.cs" />
     <Compile Include="Objects\FileReportAdditionalInfo.cs" />
     <Compile Include="Objects\FileReportDetailedEmailParents.cs" />
+    <Compile Include="Objects\FileReportFileBehaviour.cs" />
     <Compile Include="Objects\FileReportsAutoStart.cs" />
     <Compile Include="Objects\FileReportsExifTool.cs" />
     <Compile Include="Objects\FileReportSigCheck.cs" />

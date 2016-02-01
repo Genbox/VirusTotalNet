@@ -40,5 +40,11 @@ namespace VirusTotalNET.Objects
         public string TRId { get; set; }
 
         public FileReportSigCheck SigCheck { get; set; }
+
+        [DeserializeAs(Name = "behaviour-v1")]
+        public FileReportFileBehaviour Behaviourv1 { get; set; }
+
+        [DeserializeAs(Name = "clam-av-pua")]
+        public string ClamAVPUA { get; set; }
     }
 }
