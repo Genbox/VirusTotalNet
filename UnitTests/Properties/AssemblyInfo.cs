@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("VirusTotal.NET UnitTests")]
-[assembly: AssemblyCopyright("Copyright Ian Qvist © 2016")]
+[assembly: AssemblyCopyright("Copyright Ian Qvist © 2016, Copyright Keith J. Jones © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
