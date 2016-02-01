@@ -17,12 +17,11 @@ namespace UnitTests
         public static void Initialize(TestContext context)
         {
             _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
-            // Copyright Keith J. Jones © 2016
-            _virusTotal.IsPrivateKey = true;
         }
 
+        // Copyright Keith J. Jones © 2016
         [TestMethod]
-        public void GetReportForKnownFile()
+        public void GetPublicReportForKnownFile()
         {
             //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
             string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
@@ -31,6 +30,23 @@ namespace UnitTests
 
             //It should always be in the VirusTotal database.
             Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetPrivateReportForKnownFile()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
+            string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
+
+            //It should always be in the VirusTotal database.
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+
+            _virusTotal.IsPrivateKey = false;
         }
 
         [TestMethod]

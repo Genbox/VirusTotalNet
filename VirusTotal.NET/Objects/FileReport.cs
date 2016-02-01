@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
+using RestSharp.Deserializers;
 
 namespace VirusTotalNET.Objects
 {
     public class FileReport
     {
+        //
+        //  Public API Items
+        //
+
         /// <summary>
         /// MD5 hash of the resource.
         /// </summary>
@@ -61,8 +66,38 @@ namespace VirusTotalNET.Objects
         public int Total { get; set; }
 
         /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
+        /// Contains the message that corresponds to the reponse code.
         /// </summary>
         public string VerboseMsg { get; set; }
+
+        // Copyright Keith J. Jones © 2016
+
+        //
+        //  Private API Items
+        //
+
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
+        [DeserializeAs(Name = "ITW_urls")]
+        public List<string> ITWUrls { get; set; }
+
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
+        public FileReportAdditionalInfo AdditionalInfo { get; set; }
+
+        public float CommunityReputation { get; set; }
+
+        public DateTime FirstSeen { get; set; }
+
+        public float HarmlessVotes { get; set; }
+
+        public DateTime LastSeen { get; set; }
+
+        public string MaliciousVotes { get; set; }
+
     }
+
+
 }
