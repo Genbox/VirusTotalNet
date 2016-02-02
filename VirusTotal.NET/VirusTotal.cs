@@ -416,6 +416,38 @@ namespace VirusTotalNET
             return GetResults<List<FileReport>>(request);
         }
 
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Download a file from VT.  Only works with private API.
+        /// Creates a new file, writes the specified string to the file, and then closes the file. 
+        /// If the target file already exists, it is overwritten.
+        /// </summary>
+        /// <param name="hash">The hash of the file to download.</param>
+        /// <param name="dest">The destination file from the download</param>
+        /// <returns>true if downloaded and saved, false otherwise</returns>
+        public bool GetFileDownload(string hash, string dest)
+        {
+            if (IsPrivateKey == true)
+            {
+                if (string.IsNullOrWhiteSpace(hash))
+                {
+                    throw new ArgumentException("You have to supply a hash.", "hash");
+                }
+
+                //https://www.virustotal.com/vtapi/v2/file/download
+                RestRequest request = PrepareRequest("file/download", Method.GET);
+
+                //Required
+                request.AddParameter("hash", hash);
+
+                return GetFile(request, dest);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Scan the given URL. The URL will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest report on the URL.
@@ -705,6 +737,47 @@ namespace VirusTotalNET
             IDeserializer deserializer = new JsonDeserializer();
 
             return deserializer.Deserialize<T>(response);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Attempts to download a file from VirusTotal.  Only works with private API.
+        /// Creates a new file, writes the specified string to the file, and then closes the file. 
+        /// If the target file already exists, it is overwritten.
+        /// </summary>
+        /// <param name="request">The request</param>
+        /// <param name="dest">The destination for the file</param>
+        /// <returns>true if the file was downloaded and saved, false otherwise</returns>
+        private bool GetFile(RestRequest request, string dest)
+        {
+            if (IsPrivateKey == true)
+            {
+                bool SavedState = _client.FollowRedirects;
+                // Files aren't always saved at the same URL
+                _client.FollowRedirects = true;
+
+                RestResponse response = (RestResponse)_client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
+                }
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return false;
+                }
+
+
+                File.WriteAllBytes(dest, response.RawBytes);
+
+                _client.FollowRedirects = SavedState;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private string NormalizeUrl(string url)

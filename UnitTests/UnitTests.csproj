@@ -53,6 +53,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CreateCommentTests.cs" />
+    <Compile Include="FileDownloadTests.cs" />
     <Compile Include="IPReportTests.cs" />
     <Compile Include="DomainReportTests.cs" />
     <Compile Include="UrlReportTests.cs" />
