@@ -16,9 +16,6 @@ namespace UnitTests
         public static void Initialize(TestContext context)
         {
             _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
-
-            // Copyright Keith J. Jones © 2016
-            _virusTotal.IsPrivateKey = true;
         }
 
         [TestMethod]
@@ -26,6 +23,18 @@ namespace UnitTests
         {
             UrlReport urlReport = _virusTotal.GetUrlReport("google.com");
             Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetReportKnownUrlWithMalware()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            UrlReport urlReport = _virusTotal.GetUrlReport("http://dl6.iq7download.com/lm/bundles/ask/ask_detection.zip");
+            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+
+            _virusTotal.IsPrivateKey = false;
         }
 
         [TestMethod]

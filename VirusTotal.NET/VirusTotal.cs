@@ -530,9 +530,18 @@ namespace VirusTotalNET
             //Required
             request.AddParameter("resource", string.Join(Environment.NewLine, urls));
 
+            // Copyright Keith J. Jones © 2016
+            // Pull additional information if this is private API key
+            if (IsPrivateKey == true)
+            {
+                request.AddParameter("allinfo", "1");
+            }
+
             //Optional
             if (scanIfNoReport)
+            {
                 request.AddParameter("scan", 1);
+            }
 
             //Output
             return GetResults<List<UrlReport>>(request);
