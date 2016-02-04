@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace VirusTotalNET.Objects
 {
+    /// <summary>
+    /// Class to hold behaviour information
+    /// </summary>
     public class FileReportFileBehaviour
     {
         public List<string> Extra { get; set; }

@@ -62,6 +62,17 @@
     <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Exceptions\InvalidResourceException.cs" />
+    <Compile Include="Objects\FileBehaviourReport.cs" />
+    <Compile Include="Objects\FileBehaviourReportBehaviour.cs" />
+    <Compile Include="Objects\FileBehaviourReportInfo.cs" />
+    <Compile Include="Objects\FileBehaviourReportNetwork.cs" />
+    <Compile Include="Objects\FileBehaviourReportNetworkDns.cs" />
+    <Compile Include="Objects\FileBehaviourReportNetworkConnection.cs" />
+    <Compile Include="Objects\FileBehaviourReportProcess.cs" />
+    <Compile Include="Objects\FileBehaviourReportProcessCall.cs" />
+    <Compile Include="Objects\FileBehaviourReportProcessCallArgument.cs" />
+    <Compile Include="Objects\FileBehaviourReportProcessTreeItem.cs" />
+    <Compile Include="Objects\FileBehaviourReportSummary.cs" />
     <Compile Include="Objects\FileReportAdditionalInfo.cs" />
     <Compile Include="Objects\FileReportDetailedEmailParents.cs" />
     <Compile Include="Objects\FileReportFileBehaviour.cs" />

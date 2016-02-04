@@ -418,6 +418,44 @@ namespace VirusTotalNET
 
         // Copyright Keith J. Jones © 2016
         /// <summary>
+        /// Retrieves the file behaviour for a given file hash.
+        /// </summary>
+        /// <param name="hash">The file hash to query</param>
+        /// <returns>A class containing the file behaviour, an empty class otherwise</returns>
+        public FileBehaviourReport GetFileBehaviour(string hash)
+        {
+            if (IsPrivateKey == true)
+            {
+                if (string.IsNullOrWhiteSpace(hash))
+                {
+                    throw new ArgumentException("You have to supply a hash.", "hash");
+                }
+
+                //https://www.virustotal.com/vtapi/v2/file/behaviour
+                RestRequest request = PrepareRequest("file/behaviour", Method.GET);
+
+                // Need this for this report
+                bool SavedState = _client.FollowRedirects;
+                _client.FollowRedirects = true;
+
+                //Required
+                request.AddParameter("hash", hash);
+
+                FileBehaviourReport myReport = GetResults<FileBehaviourReport>(request);
+
+                // Change it back
+                _client.FollowRedirects = SavedState;
+
+                return myReport;
+            }
+            else
+            {
+                return new FileBehaviourReport();
+            }
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
         /// Download a file from VT.  Only works with private API.
         /// Creates a new file, writes the specified string to the file, and then closes the file. 
         /// If the target file already exists, it is overwritten.
