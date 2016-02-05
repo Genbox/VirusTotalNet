@@ -495,6 +495,52 @@ namespace VirusTotalNET
             }
         }
 
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the live feed of file distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Reports">Include the files' antivirus results in the response.</param>
+        /// <param name="Limit">Limit the number of records returned</param>
+        /// <param name="Before">Retrieve files received before the given timestamp, in timestamp descending order.  Use null value to turn off.</param>
+        /// <param name="After">Retrieve files received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of file distribution reports, an empty list otherwise</returns>
+        public List<FileDistributionReport> GetFileDistribution (bool Reports = true, long Limit = long.MaxValue, long? Before = null, long? After = null)
+        {
+            List<FileDistributionReport> myListOfReports = new List<FileDistributionReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/file/distribution
+                RestRequest request = PrepareRequest("file/distribution", Method.GET);
+
+                // Reports
+                if (Reports == true)
+                {
+                    request.AddParameter("reports", "true");
+                }
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // Before
+                if (Before != null)
+                {
+                    request.AddParameter("before", Before);
+                }
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<FileDistributionReport>>(request);
+            }
+
+            return myListOfReports;
+        }
+
         /// <summary>
         /// Scan the given URL. The URL will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest report on the URL.

@@ -73,6 +73,7 @@
     <Compile Include="Objects\FileBehaviourReportProcessCallArgument.cs" />
     <Compile Include="Objects\FileBehaviourReportProcessTreeItem.cs" />
     <Compile Include="Objects\FileBehaviourReportSummary.cs" />
+    <Compile Include="Objects\FileDistributionReport.cs" />
     <Compile Include="Objects\FileReportAdditionalInfo.cs" />
     <Compile Include="Objects\FileReportDetailedEmailParents.cs" />
     <Compile Include="Objects\FileReportFileBehaviour.cs" />

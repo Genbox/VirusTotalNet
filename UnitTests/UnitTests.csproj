@@ -59,6 +59,7 @@
     <Compile Include="FileDownloadTests.cs" />
     <Compile Include="IPReportTests.cs" />
     <Compile Include="DomainReportTests.cs" />
+    <Compile Include="FileDistributionReportTests.cs" />
     <Compile Include="UrlReportTests.cs" />
     <Compile Include="UrlScanTests.cs" />
     <Compile Include="FileReportTests.cs" />
