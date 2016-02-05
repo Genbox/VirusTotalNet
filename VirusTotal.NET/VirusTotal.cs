@@ -77,7 +77,16 @@ namespace VirusTotalNET
         }
 
         // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Set to true to access private API functions if this is a private key
+        /// </summary>
         public bool IsPrivateKey { get; set; } = false;
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Set to true to access the unlimited private API functions if this is an unlimited private API key
+        /// </summary>
+        public bool IsUnlimitedPrivateKey { get; set; } = false;
 
         /// <summary>
         /// Get or set the proxy.
