@@ -84,6 +84,7 @@
     <Compile Include="Objects\DomainReport.cs" />
     <Compile Include="Objects\IPReportResponseCode.cs" />
     <Compile Include="Objects\DetectedUrl.cs" />
+    <Compile Include="Objects\UrlDistributionReport.cs" />
     <Compile Include="Objects\UrlReport.cs" />
     <Compile Include="Objects\Resolution.cs" />
     <Compile Include="Objects\Sample.cs" />

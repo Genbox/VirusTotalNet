@@ -672,6 +672,73 @@ namespace VirusTotalNET
             return GetResults<List<UrlReport>>(request);
         }
 
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the summary live feed of URL distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Limit">Retrieve limit file items at most</param>
+        /// <param name="After">Retrieve URLs received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of URL distribution reports, an empty list otherwise</returns>
+        public List<UrlDistributionReport> GetSummaryUrlDistribution(long Limit = long.MaxValue, long? After = null)
+        {
+            List<UrlDistributionReport> myListOfReports = new List<UrlDistributionReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/url/distribution
+                RestRequest request = PrepareRequest("url/distribution", Method.GET);
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<UrlDistributionReport>>(request);
+            }
+
+            return myListOfReports;
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the detailed live feed of URL distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Limit">Retrieve limit file items at most</param>
+        /// <param name="After">Retrieve URLs received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of URL distribution reports, an empty list otherwise</returns>
+        public List<UrlReport> GetDetailedUrlDistribution(long Limit = long.MaxValue, long? After = null)
+        {
+            List<UrlReport> myListOfReports = new List<UrlReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/url/distribution
+                RestRequest request = PrepareRequest("url/distribution", Method.GET);
+
+                // Reports
+                request.AddParameter("reports", "true");
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<UrlReport>>(request);
+            }
+
+            return myListOfReports;
+        }
+
         /// <summary>
         /// Gets a scan report from an IP
         /// </summary>
