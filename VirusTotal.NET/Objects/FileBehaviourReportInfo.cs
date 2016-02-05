@@ -14,9 +14,8 @@ namespace VirusTotalNET.Objects
     public class FileBehaviourReportInfo
     {
         public string Duration { get; set; }
-        // These could be DateTimes, maybe
-        public string Ended { get; set; }
-        public string Started { get; set; }
+        public DateTime? Ended { get; set; }
+        public DateTime? Started { get; set; }
         public string Version { get; set; }
     }
 }
