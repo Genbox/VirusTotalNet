@@ -796,6 +796,8 @@ namespace VirusTotalNET
 
                 RestResponse response = (RestResponse)_client.Execute(request);
 
+                _client.FollowRedirects = SavedState;
+
                 if (response.StatusCode == HttpStatusCode.NoContent)
                 {
                     throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
@@ -809,7 +811,6 @@ namespace VirusTotalNET
 
                 File.WriteAllBytes(dest, response.RawBytes);
 
-                _client.FollowRedirects = SavedState;
                 return true;
             }
             else
