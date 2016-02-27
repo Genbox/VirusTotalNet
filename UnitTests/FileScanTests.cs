@@ -69,7 +69,7 @@ namespace UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(SizeLimitException))]
-        public void ScanLargeFile()
+        public void ScanLargeFileOverSizeLimits()
         {
             //We expect it to throw a SizeLimitException because the file is above the legal limit
             _virusTotal.ScanFile(new byte[_virusTotal.FileSizeLimit + 1], "VirusTotal.NET-Test.txt");
@@ -80,6 +80,30 @@ namespace UnitTests
         {
             _virusTotal.Timeout = 1000 * 250;
             _virusTotal.ScanFile(new byte[_virusTotal.FileSizeLimit], "VirusTotal.NET-Test.txt");
+        }
+
+        [TestMethod]
+        public void ScanLargeFileWithoutSizeLimitRestrictions()
+        {
+            _virusTotal.RestrictSizeLimits = false;
+            _virusTotal.FollowRedirects = true;
+
+            try
+            {
+                // We expect it to ask for the larger size because the file is above the legal limit
+                // to test this without access denied, the API key must be allowed to upload larger files
+                _virusTotal.ScanFile(new byte[_virusTotal.FileSizeLimit + 1], "VirusTotal.NET-Test.txt");
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                _virusTotal.RestrictSizeLimits = true;
+                _virusTotal.FollowRedirects = false;
+            }
+
         }
     }
 }

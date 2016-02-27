@@ -16,6 +16,9 @@ namespace VirusTotalNET
         private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
+        private const long PUBLIC_FILE_SIZE_UPLOAD_LIMIT = 33553369;
+        // defaults to 15 minutes, which should be plenty of time for a large file upload
+        private int _largeFileUploadTimeout = 900000;
 
         /// <summary>
         /// Public constructor for VirusTotal.
@@ -76,6 +79,12 @@ namespace VirusTotalNET
             }
         }
 
+        public bool FollowRedirects
+        {
+            get { return _client.FollowRedirects; }
+            set { _client.FollowRedirects = value; }
+        }
+
         /// <summary>
         /// Get or set the proxy.
         /// </summary>
@@ -85,6 +94,11 @@ namespace VirusTotalNET
         /// Get or set the timeout in miliseconds.
         /// </summary>
         public int Timeout { get { return _client.Timeout; } set { _client.Timeout = value; } }
+
+        /// <summary>
+        /// Gets or sets the large file upload timeout in milliseconds.
+        /// </summary>
+        public int LargeFileUploadTimeout { get { return _largeFileUploadTimeout; } set { _largeFileUploadTimeout = value; } }
 
         /// <summary>
         /// The URL which the Virus Total service listens on. IF you don't set the scheme to http:// or https:// it will default to https.
@@ -164,12 +178,34 @@ namespace VirusTotalNET
             if (string.IsNullOrWhiteSpace(filename))
                 throw new ArgumentException("You must provide a filename. Preferably the original filename.");
 
-            //https://www.virustotal.com/vtapi/v2/file/scan
-            RestRequest request = PrepareRequest("file/scan");
-            request.AddFile("file", fileStream.CopyTo, filename);
+            if (fileStream.Length > PUBLIC_FILE_SIZE_UPLOAD_LIMIT)
+            {
+                //assume we are getting a private upload url
+                //https://www.virustotal.com/vtapi/v2/file/scan/upload_url
+                RestRequest uploadRequest = PrepareRequest("file/scan/upload_url", Method.GET);
+                var bigFile = GetResults<LargeFileUpload>(uploadRequest);
 
-            //Output
-            return GetResults<ScanResult>(request);
+                var bigFileUri = new Uri(bigFile.UploadUrl);
+                RestRequest request = new RestRequest(bigFileUri, Method.POST);
+                request.AddFile("file", fileStream.CopyTo, filename);
+
+                var largeFileUploadClient = new RestClient(bigFileUri.Scheme + "://" + bigFileUri.Host);
+                largeFileUploadClient.FollowRedirects = true;
+                largeFileUploadClient.Proxy = _client.Proxy;
+                largeFileUploadClient.Timeout = _largeFileUploadTimeout;
+
+                //Output
+                return GetResults<ScanResult>(request, largeFileUploadClient);
+            }
+            else
+            {
+                //https://www.virustotal.com/vtapi/v2/file/scan
+                RestRequest request = PrepareRequest("file/scan");
+                request.AddFile("file", fileStream.CopyTo, filename);
+
+                //Output
+                return GetResults<ScanResult>(request);
+            }
         }
 
         /// <summary>
@@ -657,9 +693,17 @@ namespace VirusTotalNET
             return request;
         }
 
-        private T GetResults<T>(RestRequest request)
+        private T GetResults<T>(RestRequest request, RestClient clientOverride = null)
         {
-            RestResponse response = (RestResponse)_client.Execute(request);
+            RestResponse response = null;
+            if (clientOverride == null)
+            {
+                response = (RestResponse)_client.Execute(request);
+            }
+            else
+            {
+                response = (RestResponse)clientOverride.Execute(request);
+            }
 
             if (response.StatusCode == HttpStatusCode.NoContent)
                 throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");

@@ -62,6 +62,7 @@
     <Compile Include="Exceptions\SizeLimitException.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Exceptions\InvalidResourceException.cs" />
+    <Compile Include="Objects\LargeFileUpload.cs" />
     <Compile Include="Objects\IPReport.cs" />
     <Compile Include="Objects\DomainReport.cs" />
     <Compile Include="Objects\IPReportResponseCode.cs" />
