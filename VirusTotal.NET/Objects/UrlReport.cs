@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RestSharp.Deserializers;
 
 namespace VirusTotalNET.Objects
 {
@@ -59,5 +60,27 @@ namespace VirusTotalNET.Objects
         /// Contains the message that corrosponds to the reponse code.
         /// </summary>
         public string VerboseMsg { get; set; }
+
+        // Copyright Keith J. Jones © 2016
+
+        //
+        //  Private API Items
+        //
+
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
+        public UrlReportAdditionalInfo AdditionalInfo { get; set; }
+
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
+        public DateTime FirstSeen { get; set; }
+
+        /// <summary>
+        /// Valid for private API only
+        /// </summary>
+        public DateTime LastSeen { get; set; }
+
     }
 }

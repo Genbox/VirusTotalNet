@@ -19,8 +19,9 @@ namespace UnitTests
             _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
         }
 
+        // Copyright Keith J. Jones © 2016
         [TestMethod]
-        public void GetReportForKnownFile()
+        public void GetPublicReportForKnownFile()
         {
             //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
             string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
@@ -29,6 +30,63 @@ namespace UnitTests
 
             //It should always be in the VirusTotal database.
             Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNull(fileReport.AdditionalInfo);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetPrivateReportForKnownFile()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
+            string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
+
+            //It should always be in the VirusTotal database.
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNotNull(fileReport.AdditionalInfo);
+
+            _virusTotal.IsPrivateKey = false;
+        }
+
+        // Copyright Keith J. Jones © 2016
+        // This is a bug, and I can't figure out why it is throwing an exception.
+        [TestMethod]
+        public void GetPrivateReportForKnownFileBUGEXAMPLE()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            string hash = "056E54E057BD4954C0DA0FFE9BB398D2";
+
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
+
+            //It should always be in the VirusTotal database.
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNotNull(fileReport.AdditionalInfo);
+
+            _virusTotal.IsPrivateKey = false;
+        }
+
+
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetPrivateReportForKnownFileWithBehaviour()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            // This hash has known behaviour data
+            string hash = "44cda81782dc2a346abd7b2285530c5f";
+
+            FileReport fileReport = _virusTotal.GetFileReport(hash);
+
+            //It should always be in the VirusTotal database.
+            Assert.AreEqual(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.IsNotNull(fileReport.AdditionalInfo);
+            Assert.IsNotNull(fileReport.AdditionalInfo.Behaviourv1);
+
+            _virusTotal.IsPrivateKey = false;
         }
 
         [TestMethod]

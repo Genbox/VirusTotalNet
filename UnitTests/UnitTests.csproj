@@ -47,14 +47,20 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
     <Compile Include="CreateCommentTests.cs" />
+    <Compile Include="FileBehaviourReportTests.cs" />
+    <Compile Include="FileDownloadTests.cs" />
     <Compile Include="IPReportTests.cs" />
     <Compile Include="DomainReportTests.cs" />
+    <Compile Include="FileDistributionReportTests.cs" />
+    <Compile Include="URLDistributionReportTests.cs" />
     <Compile Include="UrlReportTests.cs" />
     <Compile Include="UrlScanTests.cs" />
     <Compile Include="FileReportTests.cs" />

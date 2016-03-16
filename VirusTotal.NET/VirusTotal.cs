@@ -76,6 +76,18 @@ namespace VirusTotalNET
             }
         }
 
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Set to true to access private API functions if this is a private key
+        /// </summary>
+        public bool IsPrivateKey { get; set; } = false;
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Set to true to access the unlimited private API functions if this is an unlimited private API key
+        /// </summary>
+        public bool IsUnlimitedPrivateKey { get; set; } = false;
+
         /// <summary>
         /// Get or set the proxy.
         /// </summary>
@@ -402,8 +414,131 @@ namespace VirusTotalNET
             //Required
             request.AddParameter("resource", string.Join(",", hashes));
 
+            // Copyright Keith J. Jones © 2016
+            // Pull additional information if this is private API key
+            if (IsPrivateKey == true)
+            {
+                request.AddParameter("allinfo", "1");
+            }
+
             //Output
             return GetResults<List<FileReport>>(request);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the file behaviour for a given file hash.
+        /// </summary>
+        /// <param name="hash">The file hash to query</param>
+        /// <returns>A class containing the file behaviour, an empty class otherwise</returns>
+        public FileBehaviourReport GetFileBehaviour(string hash)
+        {
+            if (IsPrivateKey == true)
+            {
+                if (string.IsNullOrWhiteSpace(hash))
+                {
+                    throw new ArgumentException("You have to supply a hash.", "hash");
+                }
+
+                //https://www.virustotal.com/vtapi/v2/file/behaviour
+                RestRequest request = PrepareRequest("file/behaviour", Method.GET);
+
+                // Need this for this report
+                bool SavedState = _client.FollowRedirects;
+                _client.FollowRedirects = true;
+
+                //Required
+                request.AddParameter("hash", hash);
+
+                FileBehaviourReport myReport = GetResults<FileBehaviourReport>(request);
+
+                // Change it back
+                _client.FollowRedirects = SavedState;
+
+                return myReport;
+            }
+            else
+            {
+                return new FileBehaviourReport();
+            }
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Download a file from VT.  Only works with private API.
+        /// Creates a new file, writes the specified string to the file, and then closes the file. 
+        /// If the target file already exists, it is overwritten.
+        /// </summary>
+        /// <param name="hash">The hash of the file to download.</param>
+        /// <param name="dest">The destination file from the download</param>
+        /// <returns>true if downloaded and saved, false otherwise</returns>
+        public bool GetFileDownload(string hash, string dest)
+        {
+            if (IsPrivateKey == true)
+            {
+                if (string.IsNullOrWhiteSpace(hash))
+                {
+                    throw new ArgumentException("You have to supply a hash.", "hash");
+                }
+
+                //https://www.virustotal.com/vtapi/v2/file/download
+                RestRequest request = PrepareRequest("file/download", Method.GET);
+
+                //Required
+                request.AddParameter("hash", hash);
+
+                return GetFile(request, dest);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the live feed of file distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Reports">Include the files' antivirus results in the response.</param>
+        /// <param name="Limit">Limit the number of records returned</param>
+        /// <param name="Before">Retrieve files received before the given timestamp, in timestamp descending order.  Use null value to turn off.</param>
+        /// <param name="After">Retrieve files received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of file distribution reports, an empty list otherwise</returns>
+        public List<FileDistributionReport> GetFileDistribution (bool Reports = true, long Limit = long.MaxValue, long? Before = null, long? After = null)
+        {
+            List<FileDistributionReport> myListOfReports = new List<FileDistributionReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/file/distribution
+                RestRequest request = PrepareRequest("file/distribution", Method.GET);
+
+                // Reports
+                if (Reports == true)
+                {
+                    request.AddParameter("reports", "true");
+                }
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // Before
+                if (Before != null)
+                {
+                    request.AddParameter("before", Before);
+                }
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<FileDistributionReport>>(request);
+            }
+
+            return myListOfReports;
         }
 
         /// <summary>
@@ -457,6 +592,13 @@ namespace VirusTotalNET
 
             //Required
             request.AddParameter("url", string.Join(Environment.NewLine, urls));
+
+            // Copyright Keith J. Jones © 2016
+            // Pull additional information if this is private API key
+            if (IsPrivateKey == true)
+            {
+                request.AddParameter("allinfo", "1");
+            }
 
             //Output
             return GetResults<List<ScanResult>>(request);
@@ -513,12 +655,88 @@ namespace VirusTotalNET
             //Required
             request.AddParameter("resource", string.Join(Environment.NewLine, urls));
 
+            // Copyright Keith J. Jones © 2016
+            // Pull additional information if this is private API key
+            if (IsPrivateKey == true)
+            {
+                request.AddParameter("allinfo", "1");
+            }
+
             //Optional
             if (scanIfNoReport)
+            {
                 request.AddParameter("scan", 1);
+            }
 
             //Output
             return GetResults<List<UrlReport>>(request);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the summary live feed of URL distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Limit">Retrieve limit file items at most</param>
+        /// <param name="After">Retrieve URLs received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of URL distribution reports, an empty list otherwise</returns>
+        public List<UrlDistributionReport> GetSummaryUrlDistribution(long Limit = long.MaxValue, long? After = null)
+        {
+            List<UrlDistributionReport> myListOfReports = new List<UrlDistributionReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/url/distribution
+                RestRequest request = PrepareRequest("url/distribution", Method.GET);
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<UrlDistributionReport>>(request);
+            }
+
+            return myListOfReports;
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Retrieves the detailed live feed of URL distribution.
+        /// Requires a private API key with unlimited access.
+        /// </summary>
+        /// <param name="Limit">Retrieve limit file items at most</param>
+        /// <param name="After">Retrieve URLs received after the given timestamp, in timestamp ascending order.  Use null value to turn off.</param>
+        /// <returns>A list of URL distribution reports, an empty list otherwise</returns>
+        public List<UrlReport> GetDetailedUrlDistribution(long Limit = long.MaxValue, long? After = null)
+        {
+            List<UrlReport> myListOfReports = new List<UrlReport>();
+
+            if (IsPrivateKey == true && IsUnlimitedPrivateKey == true)
+            {
+                //https://www.virustotal.com/vtapi/v2/url/distribution
+                RestRequest request = PrepareRequest("url/distribution", Method.GET);
+
+                // Reports
+                request.AddParameter("reports", "true");
+
+                // Limit
+                request.AddParameter("limit", Limit);
+
+                // After
+                if (After != null)
+                {
+                    request.AddParameter("after", After);
+                }
+
+                myListOfReports = GetResults<List<UrlReport>>(request);
+            }
+
+            return myListOfReports;
         }
 
         /// <summary>
@@ -679,6 +897,48 @@ namespace VirusTotalNET
             IDeserializer deserializer = new JsonDeserializer();
 
             return deserializer.Deserialize<T>(response);
+        }
+
+        // Copyright Keith J. Jones © 2016
+        /// <summary>
+        /// Attempts to download a file from VirusTotal.  Only works with private API.
+        /// Creates a new file, writes the specified string to the file, and then closes the file. 
+        /// If the target file already exists, it is overwritten.
+        /// </summary>
+        /// <param name="request">The request</param>
+        /// <param name="dest">The destination for the file</param>
+        /// <returns>true if the file was downloaded and saved, false otherwise</returns>
+        private bool GetFile(RestRequest request, string dest)
+        {
+            if (IsPrivateKey == true)
+            {
+                bool SavedState = _client.FollowRedirects;
+                // Files aren't always saved at the same URL
+                _client.FollowRedirects = true;
+
+                RestResponse response = (RestResponse)_client.Execute(request);
+
+                _client.FollowRedirects = SavedState;
+
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
+                }
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return false;
+                }
+
+
+                File.WriteAllBytes(dest, response.RawBytes);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private string NormalizeUrl(string url)

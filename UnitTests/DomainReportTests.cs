@@ -24,6 +24,21 @@ namespace UnitTests
             Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
         }
 
+        /// <summary>
+        /// This tests for the bugs in the domain reports
+        /// Copyright Keith J. Jones © 2016
+        /// </summary>
+        [TestMethod]
+        public void GetDomainReportKnownDomain2()
+        {
+            DomainReport report = _virusTotal.GetDomainReport("fenggui.f3322.net");
+            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
+
+            Assert.AreEqual(100, report.Subdomains.Count);
+            Assert.AreEqual(1, report.DetectedCommunicatingSamples.Count);
+            Assert.AreEqual(1, report.DetectedUrls.Count);
+        }
+
         [TestMethod]
         public void GetDomainReportUnknownDomain()
         {

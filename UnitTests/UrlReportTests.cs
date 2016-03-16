@@ -25,6 +25,30 @@ namespace UnitTests
             Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
         }
 
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetReportKnownUrlWithMalwarePrivateAPI()
+        {
+            _virusTotal.IsPrivateKey = true;
+
+            UrlReport urlReport = _virusTotal.GetUrlReport("http://dl6.iq7download.com/lm/bundles/ask/ask_detection.zip");
+            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+
+            Assert.IsNotNull(urlReport.AdditionalInfo);
+
+            _virusTotal.IsPrivateKey = false;
+        }
+
+        // Copyright Keith J. Jones © 2016
+        [TestMethod]
+        public void GetReportKnownUrlWithMalwarePublicAPI()
+        {
+            UrlReport urlReport = _virusTotal.GetUrlReport("http://dl6.iq7download.com/lm/bundles/ask/ask_detection.zip");
+            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+
+            Assert.IsNull(urlReport.AdditionalInfo);
+        }
+
         [TestMethod]
         public void GetMultipleReportKnownUrl()
         {
