@@ -24,7 +24,7 @@ namespace UnitTests
         public void GetPublicReportForKnownFile()
         {
             //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            string hash = "056E54E057BD4954C0DA0FFE9BB398D2"; HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+            string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
             FileReport fileReport = _virusTotal.GetFileReport(hash);
 
@@ -40,7 +40,7 @@ namespace UnitTests
             _virusTotal.IsPrivateKey = true;
 
             //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            string hash = "056E54E057BD4954C0DA0FFE9BB398D2";//HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+            string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
             FileReport fileReport = _virusTotal.GetFileReport(hash);
 
