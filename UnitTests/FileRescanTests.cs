@@ -18,6 +18,7 @@ namespace UnitTests
             _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
         }
 
+        // This throws a bug even when I use an unlimited private API key - Copyright Keith J. Jones © 2016
         [TestMethod]
         public void RescanKnownFile()
         {
@@ -37,6 +38,7 @@ namespace UnitTests
             //TODO
         }
 
+        // This throws a bug even when I use an unlimited private API key - Copyright Keith J. Jones © 2016
         [TestMethod]
         public void RescanUnknownFile()
         {
@@ -66,6 +68,7 @@ namespace UnitTests
             Assert.AreEqual(ScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
+        // This throws a bug even when I use an unlimited private API key - Copyright Keith J. Jones © 2016
         [TestMethod]
         public void RescanLargeFile()
         {
