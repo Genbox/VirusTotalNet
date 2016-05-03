@@ -16,6 +16,7 @@ namespace VirusTotalNET
         private readonly RestClient _client = new RestClient();
         private readonly string _apiKey;
         private bool _useTls;
+        private string _userAgent;
 
         /// <summary>
         /// Public constructor for VirusTotal.
@@ -31,6 +32,7 @@ namespace VirusTotalNET
             _useTls = true;
             _apiKey = apiKey;
             _client.FollowRedirects = false;
+            _userAgent = _client.UserAgent;
 
             FileSizeLimit = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total
             RestrictSizeLimits = true;
@@ -75,6 +77,11 @@ namespace VirusTotalNET
                 _client.BaseUrl = _useTls ? new Uri("https://" + oldUrl) : new Uri("http://" + oldUrl);
             }
         }
+
+        /// <summary>
+        /// Get or set the user agent string.
+        /// </summary>
+        public string UserAgent { get { return _userAgent; } set { _userAgent = _client.UserAgent = value; } }
 
         /// <summary>
         /// Get or set the proxy.
