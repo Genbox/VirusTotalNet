@@ -76,6 +76,8 @@ namespace VirusTotalNET
             }
         }
 
+        public string UserAgent { get { return _client.UserAgent; } set { _client.UserAgent = value; } }
+
         /// <summary>
         /// Get or set the proxy.
         /// </summary>
