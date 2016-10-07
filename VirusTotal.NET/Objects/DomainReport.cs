@@ -46,6 +46,7 @@ namespace VirusTotalNET.Objects
         /// </summary>
         public ReportResponseCode ResponseCode { get; set; }
 
+        // Bugfix Copyright Keith J. Jones © 2016
         [DeserializeAs(Name = "domain_siblings")]
         public List<string> Subdomains { get; set; }
 
@@ -75,6 +76,7 @@ namespace VirusTotalNET.Objects
         [DeserializeAs(Name = "whois_timestamp")]
         public string WhoIsTimestamp { get; set; }
 
+        // Bugfix Copyright Keith J. Jones © 2016
         public DateTime? WhoIsDateTime
         {
             get

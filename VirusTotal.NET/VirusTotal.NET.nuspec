@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>VirusTotal.NET</id>
+    <version>1.3.1</version>
+    <title>VirusTotal.Net</title>
+    <authors>Ian Qvist</authors>
+    <owners>Ian Qvist</owners>
+    <licenseUrl>https://github.com/Genbox/VirusTotal.NET/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/Genbox/VirusTotal.NET</projectUrl>
+	<!--
+    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+	-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A full implementation of the VirusTotal 2.0 API</description>
+    <releaseNotes>
+		1.3.1		Bug fixed domain reports.
+	</releaseNotes>
+    <copyright>Copyright 2016 Ian Qvist, Keith J. Jones</copyright>
+    <tags>VirusTotal Virus Scan API</tags>
+  </metadata>
+</package>

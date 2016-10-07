@@ -1,3 +1,6 @@
+# Ignore NuGet packages
+*.nupkg
+
 #################
 ## Eclipse
 #################
