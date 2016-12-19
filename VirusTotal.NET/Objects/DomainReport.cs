@@ -1,40 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using RestSharp.Deserializers;
+using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
     public class DomainReport
     {
-        [DeserializeAs(Name = "Alexa category")]
+        [JsonProperty("Alexa category")]
         public string AlexaCategory { get; set; }
 
-        [DeserializeAs(Name = "Alexa domain info")]
+        [JsonProperty("Alexa domain info")]
         public string AlexaDomainInfo { get; set; }
 
-        [DeserializeAs(Name = "Alexa rank")]
+        [JsonProperty("Alexa rank")]
         public int AlexaRank { get; set; }
 
-        [DeserializeAs(Name = "BitDefender category")]
+        [JsonProperty("BitDefender category")]
         public string BitDefenderCategory { get; set; }
 
-        [DeserializeAs(Name = "BitDefender domain info")]
+        [JsonProperty("BitDefender domain info")]
         public string BitDefenderDomainInfo { get; set; }
 
         public List<string> Categories { get; set; }
 
+        [JsonProperty("detected_communicating_samples")]
         public List<Sample> DetectedCommunicatingSamples { get; set; }
 
+        [JsonProperty("detected_downloaded_samples")]
         public List<Sample> DetectedDownloadedSamples { get; set; }
 
+        [JsonProperty("detected_referrer_samples")]
         public List<Sample> DetectedReferrerSamples { get; set; }
 
+        [JsonProperty("detected_urls")]
         public List<DetectedUrl> DetectedUrls { get; set; }
 
-        [DeserializeAs(Name = "Dr.Web category")]
+        [JsonProperty("Dr.Web category")]
         public string DrWebCategory { get; set; }
 
-        [DeserializeAs(Name = "Opera domain info")]
+        [JsonProperty("Opera domain info")]
         public string OperaDomainInfo { get; set; }
 
         public List<string> Pcaps { get; set; }
@@ -44,35 +48,43 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// The response code. Use this to determine the status of the report.
         /// </summary>
+        [JsonProperty("response_code")]
         public ReportResponseCode ResponseCode { get; set; }
 
         [DeserializeAs(Name = "domain_siblings")]
         public List<string> Subdomains { get; set; }
 
-        [DeserializeAs(Name = "TrendMicro category")]
+        [JsonProperty("subdomains")]
+        public List<string> SubDomains { get; set; }
+
+        [JsonProperty("TrendMicro category")]
         public string TrendMicroCategory { get; set; }
 
+        [JsonProperty("undetected_communicating_samples")]
         public List<Sample> UndetectedCommunicatingSamples { get; set; }
 
+        [JsonProperty("undetected_downloaded_samples")]
         public List<Sample> UndetectedDownloadedSamples { get; set; }
 
+        [JsonProperty("undetected_referrer_samples")]
         public List<Sample> UndetectedReferrerSamples { get; set; }
 
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.
         /// </summary>
+        [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }
 
-        [DeserializeAs(Name = "Websense ThreatSeeker category")]
+        [JsonProperty("Websense ThreatSeeker category")]
         public string WebsenseThreatSeekerCategory { get; set; }
 
-        [DeserializeAs(Name = "Webutation domain info")]
+        [JsonProperty("Webutation domain info")]
         public WebutationInfo WebutationDomainInfo { get; set; }
 
-        [DeserializeAs(Name = "whois")]
+        [JsonProperty("whois")]
         public string WhoIs { get; set; }
 
-        [DeserializeAs(Name = "whois_timestamp")]
+        [JsonProperty("whois_timestamp")]
         public string WhoIsTimestamp { get; set; }
 
         public DateTime? WhoIsDateTime
@@ -82,11 +94,11 @@ namespace VirusTotalNET.Objects
                 if (string.IsNullOrWhiteSpace(WhoIsTimestamp))
                     return null;
 
-                return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
+                return DateTimeOffset.FromUnixTimeSeconds((long)decimal.Parse(WhoIsTimestamp)).DateTime;
             }
         }
 
-        [DeserializeAs(Name = "WOT domain info")]
-        public WotInfo WOTDomainInfo { get; set; }
+        [JsonProperty("WOT domain info")]
+        public WOTInfo WOTDomainInfo { get; set; }
     }
 }

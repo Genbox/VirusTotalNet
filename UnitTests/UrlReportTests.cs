@@ -1,83 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VirusTotalNET;
+using System.Threading.Tasks;
 using VirusTotalNET.Objects;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
-    public class UrlReportTests
+    public class UrlReportTests : TestBase
     {
-        private static VirusTotal _virusTotal;
-
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
+        [Fact]
+        public async Task GetReportKnownUrl()
         {
-            _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
+            UrlReport urlReport = await VirusTotal.GetUrlReport("google.com");
+            Assert.Equal(ReportResponseCode.Present, urlReport.ResponseCode);
         }
 
-        [TestMethod]
-        public void GetReportKnownUrl()
-        {
-            UrlReport urlReport = _virusTotal.GetUrlReport("google.com");
-            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
-        }
-
-        [TestMethod]
-        public void GetMultipleReportKnownUrl()
+        [Fact]
+        public async Task GetMultipleReportKnownUrl()
         {
             string[] urls = { "google.se", "http://google.com", "https://virustotal.com" };
 
-            List<UrlReport> urlReports = _virusTotal.GetUrlReports(urls);
+            List<UrlReport> urlReports = await VirusTotal.GetUrlReports(urls);
 
             foreach (UrlReport urlReport in urlReports)
             {
-                Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+                Assert.Equal(ReportResponseCode.Present, urlReport.ResponseCode);
             }
         }
 
-        [TestMethod]
-        public void GetReportUnknownUrl()
+        [Fact]
+        public async Task GetReportUnknownUrl()
         {
-            UrlReport urlReport = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com");
-            Assert.AreEqual(ReportResponseCode.NotPresent, urlReport.ResponseCode);
+            UrlReport urlReport = await VirusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com");
+            Assert.Equal(ReportResponseCode.NotPresent, urlReport.ResponseCode);
 
             //We are not supposed to have a scan id
-            Assert.IsTrue(string.IsNullOrWhiteSpace(urlReport.ScanId));
+            Assert.True(string.IsNullOrWhiteSpace(urlReport.ScanId));
         }
 
-        [TestMethod]
-        public void GetMultipleReportUnknownUrl()
+        [Fact]
+        public async Task GetMultipleReportUnknownUrl()
         {
             string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
 
-            List<UrlReport> urlReports = _virusTotal.GetUrlReports(urls);
+            List<UrlReport> urlReports = await VirusTotal.GetUrlReports(urls);
 
             foreach (UrlReport urlReport in urlReports)
             {
-                Assert.AreEqual(ReportResponseCode.NotPresent, urlReport.ResponseCode);
+                Assert.Equal(ReportResponseCode.NotPresent, urlReport.ResponseCode);
             }
         }
 
-        [TestMethod]
-        public void GetReportForUnknownUrlAndScan()
+        [Fact]
+        public async Task GetReportForUnknownUrlAndScan()
         {
-            UrlReport urlReport = _virusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com", true);
+            UrlReport urlReport = await VirusTotal.GetUrlReport("VirusTotal.NET" + Guid.NewGuid() + ".com", true);
 
             //It return "present" because we told it to scan it
-            Assert.AreEqual(ReportResponseCode.Present, urlReport.ResponseCode);
+            Assert.Equal(ReportResponseCode.Present, urlReport.ResponseCode);
 
             //We are supposed to have a scan id because we scanned it
-            Assert.IsFalse(string.IsNullOrWhiteSpace(urlReport.ScanId));
+            Assert.False(string.IsNullOrWhiteSpace(urlReport.ScanId));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(Exception))]
-        public void GetReportInvalidUrl()
+        [Fact]
+        public async Task GetReportInvalidUrl()
         {
-            UrlReport urlReport = _virusTotal.GetUrlReport(".");
+            await Assert.ThrowsAsync<Exception>(async () => await VirusTotal.GetUrlReport("."));
         }
     }
 }

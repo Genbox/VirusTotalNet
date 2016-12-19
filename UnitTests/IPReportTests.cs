@@ -1,26 +1,16 @@
-﻿using System.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VirusTotalNET;
+﻿using System.Threading.Tasks;
 using VirusTotalNET.Objects;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
-    public class IPReportTests
+    public class IPReportTests : TestBase
     {
-        private static VirusTotal _virusTotal;
-
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
+        [Fact]
+        public async Task GetIPReportKnownIP()
         {
-            _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
-        }
-
-        [TestMethod]
-        public void GetIPReportKnownIP()
-        {
-            IPReport report = _virusTotal.GetIPReport("8.8.8.8"); //Google DNS
-            Assert.AreEqual(IPReportResponseCode.Present, report.ResponseCode);
+            IPReport report = await VirusTotal.GetIPReport("8.8.8.8"); //Google DNS
+            Assert.Equal(IPReportResponseCode.Present, report.ResponseCode);
         }
     }
 }

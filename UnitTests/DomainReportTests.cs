@@ -1,43 +1,24 @@
 ﻿using System;
-using System.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VirusTotalNET;
+using System.Threading.Tasks;
 using VirusTotalNET.Objects;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
-    public class DomainReportTests
+    public class DomainReportTests : TestBase
     {
-        private static VirusTotal _virusTotal;
-
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
+        [Fact]
+        public async Task GetDomainReportKnownDomain()
         {
-            _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
+            DomainReport report = await VirusTotal.GetDomainReport("google.com");
+            Assert.Equal(ReportResponseCode.Present, report.ResponseCode);
         }
 
-        [TestMethod]
-        public void GetDomainReportKnownDomain()
+        [Fact]
+        public async Task GetDomainReportUnknownDomain()
         {
-            DomainReport report = _virusTotal.GetDomainReport("google.com");
-            Assert.AreEqual(ReportResponseCode.Present, report.ResponseCode);
-        }
-
-        [TestMethod]
-        public void GetDomainReportUnknownDomain()
-        {
-            DomainReport report = _virusTotal.GetDomainReport(Guid.NewGuid() + ".com");
-            Assert.AreEqual(ReportResponseCode.NotPresent, report.ResponseCode);
-        }
-
-        [TestMethod]
-        public void GetDomainReportInvalidDomain()
-        {
-            //This test should pass, but VT have added "." as a domain, which should not happen.
-            //It therefore fails, which is to be expcted until VT team fixes this bug.
-            DomainReport report = _virusTotal.GetDomainReport(".");
-            Assert.AreEqual(ReportResponseCode.Error, report.ResponseCode);
+            DomainReport report = await VirusTotal.GetDomainReport(Guid.NewGuid() + ".com");
+            Assert.Equal(ReportResponseCode.NotPresent, report.ResponseCode);
         }
     }
 }

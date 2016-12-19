@@ -1,13 +1,13 @@
-using RestSharp.Deserializers;
+using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
     public class WebutationInfo
     {
-        [DeserializeAs(Name = "Adult content")]
+        [JsonProperty("Adult content")]
         public string AdultContent { get; set; }
 
-        [DeserializeAs(Name = "Safety score")]
+        [JsonProperty("Safety score")]
         public int SafetyScore { get; set; }
 
         public string Verdict { get; set; }

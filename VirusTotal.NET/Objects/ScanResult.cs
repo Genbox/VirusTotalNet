@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace VirusTotalNET.Objects
 {
     public class ScanResult
@@ -20,11 +22,13 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// The scan response code. Use this to determine the status of the scan.
         /// </summary>
+        [JsonProperty("response_code")]
         public ScanResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// The unique scan id of the resource.
         /// </summary>
+        [JsonProperty("scan_id")]
         public string ScanId { get; set; }
 
         /// <summary>
@@ -40,6 +44,7 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// Contains a verbose message that corrosponds to the reponse code.
         /// </summary>
+        [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }
     }
 }

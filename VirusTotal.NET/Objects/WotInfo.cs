@@ -1,17 +1,17 @@
-using RestSharp.Deserializers;
+using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
-    public class WotInfo
+    public class WOTInfo
     {
-        [DeserializeAs(Name = "Child safety")]
+        [JsonProperty("Child safety")]
         public string ChildSafety { get; set; }
 
         public string Privacy { get; set; }
 
         public string Trustworthiness { get; set; }
 
-        [DeserializeAs(Name = "Vendor reliability")]
+        [JsonProperty("Vendor reliability")]
         public string VendorReliability { get; set; }
 
     }

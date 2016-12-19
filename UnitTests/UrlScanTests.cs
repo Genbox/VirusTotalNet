@@ -1,60 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VirusTotalNET;
+using System.Threading.Tasks;
 using VirusTotalNET.Objects;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
-    public class UrlScanTests
+    public class UrlScanTests : TestBase
     {
-        private static VirusTotal _virusTotal;
-
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
+        [Fact]
+        public async Task ScanKnownUrl()
         {
-            _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
+            ScanResult fileResult = await VirusTotal.ScanUrl("google.com");
+            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
-        [TestMethod]
-        public void ScanKnownUrl()
-        {
-            ScanResult fileResult = _virusTotal.ScanUrl("google.com");
-            Assert.AreEqual(ScanResponseCode.Queued, fileResult.ResponseCode);
-        }
-
-        [TestMethod]
-        public void ScanMultipleKnownUrls()
+        [Fact]
+        public async Task ScanMultipleKnownUrls()
         {
             string[] urls = { "google.se", "http://google.com", "https://virustotal.com" };
 
-            List<ScanResult> urlScans = _virusTotal.ScanUrls(urls);
+            List<ScanResult> urlScans = await VirusTotal.ScanUrls(urls);
 
             foreach (ScanResult urlScan in urlScans)
             {
-                Assert.AreEqual(ScanResponseCode.Queued, urlScan.ResponseCode);
+                Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
             }
         }
 
-        [TestMethod]
-        public void ScanUnknownUrl()
+        [Fact]
+        public async Task ScanUnknownUrl()
         {
-            ScanResult fileResult = _virusTotal.ScanUrl("VirusTotal.NET" + Guid.NewGuid() + ".com");
-            Assert.AreEqual(ScanResponseCode.Queued, fileResult.ResponseCode);
+            ScanResult fileResult = await VirusTotal.ScanUrl("VirusTotal.NET" + Guid.NewGuid() + ".com");
+            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
-        [TestMethod]
-        public void ScanMultipleUnknownUrl()
+        [Fact]
+        public async Task ScanMultipleUnknownUrl()
         {
-            string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
+            string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
 
-            List<ScanResult> urlScans = _virusTotal.ScanUrls(urls);
+            List<ScanResult> urlScans = await VirusTotal.ScanUrls(urls);
 
             foreach (ScanResult urlScan in urlScans)
             {
-                Assert.AreEqual(ScanResponseCode.Queued, urlScan.ResponseCode);
+                Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
             }
         }
     }

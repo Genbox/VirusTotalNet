@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using RestSharp.Deserializers;
+using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
@@ -21,7 +21,7 @@ namespace VirusTotalNET.Objects
         /// </summary>
 		public string Result { get; set; }
 
-		[DeserializeAs(Name = "update")]
+		[JsonProperty("update")]
 		public string UpdateString
 		{
 			get { return UpdateDate.ToString(); }

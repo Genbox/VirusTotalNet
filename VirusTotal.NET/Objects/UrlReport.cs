@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
@@ -8,6 +9,7 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// Filescan Id of the resource.
         /// </summary>
+        [JsonProperty("filescan_id")]
         public string FilescanId { get; set; }
 
         /// <summary>
@@ -28,16 +30,19 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// The response code. Use this to determine the status of the report.
         /// </summary>
+        [JsonProperty("response_code")]
         public ReportResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// The date the resource was last scanned.
         /// </summary>
+        [JsonProperty("scan_date")]
         public DateTime ScanDate { get; set; }
         
         /// <summary>
         /// Contains the scan id for this result.
         /// </summary>
+        [JsonProperty("scan_id")]
         public string ScanId { get; set; }
 
         /// <summary>
@@ -58,6 +63,7 @@ namespace VirusTotalNET.Objects
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.
         /// </summary>
+        [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }
     }
 }

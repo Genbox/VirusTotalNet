@@ -1,27 +1,16 @@
-﻿using System.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VirusTotalNET;
+﻿using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
-    public class CreateCommentTests
+    public class CreateCommentTests : TestBase
     {
-        private static VirusTotal _virusTotal;
-
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
-        {
-            _virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
-        }
-
-        [TestMethod]
+        [Fact]
         public void CreateValidComment()
         {
             //TODO
         }
 
-        [TestMethod]
+        [Fact]
         public void CreateInvalidComment()
         {
             //TODO
