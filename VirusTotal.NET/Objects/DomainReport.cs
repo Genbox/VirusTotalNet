@@ -51,8 +51,8 @@ namespace VirusTotalNET.Objects
         [JsonProperty("response_code")]
         public ReportResponseCode ResponseCode { get; set; }
 
-        [DeserializeAs(Name = "domain_siblings")]
-        public List<string> Subdomains { get; set; }
+        [JsonProperty("domain_siblings")]
+        public List<string> DomainSiblings { get; set; }
 
         [JsonProperty("subdomains")]
         public List<string> SubDomains { get; set; }
