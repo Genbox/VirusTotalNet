@@ -10,7 +10,7 @@
       "type": "platform",
       "version": "1.0.1"
     },
-    "VirusTotal.NET": "1.0.0-*"
+    "VirusTotal.NET": "1.5.*"
   },
 
   "frameworks": {
