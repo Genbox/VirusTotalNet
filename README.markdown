@@ -24,7 +24,7 @@ static void Main(string[] args)
 	//Check if the file has been scanned before.
 	FileReport fileReport = await virusTotal.GetFileReport(new FileInfo("EICAR.txt");
 
-	Console.WriteLine("File has been scanned before: " + (fileReport.ResponseCode == ReportResponseCode.Present ? "Yes" : "No"));
+	Console.WriteLine("Seen before: " + (fileReport.ResponseCode == ReportResponseCode.Present ? "Yes" : "No"));
 }
 ```
 
