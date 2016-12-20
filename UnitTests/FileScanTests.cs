@@ -9,7 +9,6 @@ namespace UnitTests
 {
     public class FileScanTests : TestBase
     {
-
         [Fact]
         public async Task ScanKnownFile()
         {

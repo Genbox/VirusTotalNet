@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 
 namespace VirusTotalNET.Objects
 {
-	public class ScanEngine
-	{
+    public class ScanEngine
+    {
         /// <summary>
         /// True if the engine flagged the resource.
         /// </summary>
@@ -21,22 +21,22 @@ namespace VirusTotalNET.Objects
         /// </summary>
 		public string Result { get; set; }
 
-		[JsonProperty("update")]
-		public string UpdateString
-		{
-			get { return UpdateDate.ToString(); }
-			set
-			{
-				DateTime result;
+        [JsonProperty("update")]
+        public string UpdateString
+        {
+            get { return UpdateDate.ToString(); }
+            set
+            {
+                DateTime result;
 
-				if (DateTime.TryParseExact(value, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out result))
-					UpdateDate = result;
-			}
-		}
+                if (DateTime.TryParseExact(value, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out result))
+                    UpdateDate = result;
+            }
+        }
 
         /// <summary>
         /// The date of the latest signatures of the engine.
         /// </summary>
 		public DateTime UpdateDate { get; set; }
-	}
+    }
 }

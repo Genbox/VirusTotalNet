@@ -21,7 +21,7 @@ namespace VirusTotalNET.Objects
         /// How many engines flagged this resource.
         /// </summary>
         public int Positives { get; set; }
-        
+
         /// <summary>
         /// Contains the id of the resource. Can be a SHA256, MD5 or other hash type.
         /// </summary>
@@ -38,7 +38,7 @@ namespace VirusTotalNET.Objects
         /// </summary>
         [JsonProperty("scan_date")]
         public DateTime ScanDate { get; set; }
-        
+
         /// <summary>
         /// Contains the scan id for this result.
         /// </summary>
