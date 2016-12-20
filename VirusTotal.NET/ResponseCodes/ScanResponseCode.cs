@@ -1,4 +1,4 @@
-namespace VirusTotalNET.Objects
+namespace VirusTotalNET.ResponseCodes
 {
     public enum ScanResponseCode
     {

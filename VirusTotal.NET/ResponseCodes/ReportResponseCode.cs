@@ -1,7 +1,12 @@
-namespace VirusTotalNET.Objects
+namespace VirusTotalNET.ResponseCodes
 {
-    public enum IPReportResponseCode
+    public enum ReportResponseCode
     {
+        /// <summary>
+        /// The requested item is still queued for analysis.
+        /// </summary>
+        StillQueued = -2,
+
         /// <summary>
         /// There was an error in the request
         /// </summary>

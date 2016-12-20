@@ -97,7 +97,7 @@ namespace VirusTotalNET
         public static string GetMD5(Stream stream)
         {
             if (stream == null || stream.Length == 0)
-                throw new ArgumentException("You must provide a valid stream.", "stream");
+                throw new ArgumentException("You must provide a valid stream.", nameof(stream));
 
             using (MD5 md5 = MD5.Create())
             {

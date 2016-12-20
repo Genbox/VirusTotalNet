@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnitTests.TestInternals;
 using VirusTotalNET;
 using VirusTotalNET.Exceptions;
-using VirusTotalNET.Objects;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests
@@ -44,7 +45,7 @@ namespace UnitTests
         {
             List<byte[]> files = new List<byte[]>();
 
-            for (int i = 1; i <= 50; i++)
+            for (int i = 1; i <= 10; i++)
             {
                 files.Add(new byte[i]);
             }
@@ -60,12 +61,12 @@ namespace UnitTests
         {
             List<string> urls = new List<string>();
 
-            for (int i = 1; i <= 50; i++)
+            for (int i = 1; i <= 30; i++)
             {
                 urls.Add(i + ".com");
             }
 
-            List<ScanResult> results = await VirusTotal.ScanUrls(urls);
+            List<UrlScanResult> results = await VirusTotal.ScanUrls(urls);
 
             //We only expect 25 as VT simply returns 25 results no matter the batch size.
             Assert.Equal(25, results.Count);
@@ -76,7 +77,7 @@ namespace UnitTests
         {
             List<string> urls = new List<string>();
 
-            for (int i = 1; i <= 50; i++)
+            for (int i = 1; i <= 10; i++)
             {
                 urls.Add(i + ".com");
             }

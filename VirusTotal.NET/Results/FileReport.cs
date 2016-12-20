@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
 
-namespace VirusTotalNET.Objects
+namespace VirusTotalNET.Results
 {
-    public class UrlReport
+    public class FileReport
     {
         /// <summary>
-        /// Filescan Id of the resource.
+        /// MD5 hash of the resource.
         /// </summary>
-        [JsonProperty("filescan_id")]
-        public string FilescanId { get; set; }
+        public string MD5 { get; set; }
 
         /// <summary>
         /// A permanent link that points to this specific scan.
@@ -51,14 +52,19 @@ namespace VirusTotalNET.Objects
         public Dictionary<string, ScanEngine> Scans { get; set; }
 
         /// <summary>
+        /// SHA1 hash of the resource.
+        /// </summary>
+        public string SHA1 { get; set; }
+
+        /// <summary>
+        /// SHA256 hash of the resource.
+        /// </summary>
+        public string SHA256 { get; set; }
+
+        /// <summary>
         /// How many engines scanned this resource.
         /// </summary>
         public int Total { get; set; }
-
-        /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
-        /// </summary>
-        public string URL { get; set; }
 
         /// <summary>
         /// Contains the message that corrosponds to the reponse code.

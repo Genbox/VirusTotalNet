@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using UnitTests.TestInternals;
 using VirusTotalNET;
 using VirusTotalNET.Exceptions;
-using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests
@@ -31,6 +33,8 @@ namespace UnitTests
         [Fact]
         public async Task GetReportForUnknownFile()
         {
+            IgnoreMissingJson(" / MD5", " / Permalink", " / Positives", " / scan_date", " / scan_id", " / Scans", " / SHA1", " / SHA256", " / Total");
+
             string guid = "VirusTotal.NET" + Guid.NewGuid();
 
             FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
@@ -51,6 +55,8 @@ namespace UnitTests
         [Fact]
         public async void GetReportForRecentFile()
         {
+            IgnoreMissingJson(" / MD5", " / Permalink", " / Positives", " / scan_date", " / Scans", " / SHA1", " / SHA256", " / Total");
+
             //We create an unknown file
             string guid = "VirusTotal.NET" + Guid.NewGuid();
 

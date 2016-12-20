@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using VirusTotalNET;
 using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 
 namespace VirusTotalNETClient
 {
@@ -62,9 +64,16 @@ namespace VirusTotalNETClient
             }
             else
             {
-                ScanResult urlResult = await virusTotal.ScanUrl(ScanUrl);
+                UrlScanResult urlResult = await virusTotal.ScanUrl(ScanUrl);
                 PrintScan(urlResult);
             }
+        }
+
+        private static void PrintScan(UrlScanResult scanResult)
+        {
+            Console.WriteLine("Scan ID: " + scanResult.ScanId);
+            Console.WriteLine("Message: " + scanResult.VerboseMsg);
+            Console.WriteLine();
         }
 
         private static void PrintScan(ScanResult scanResult)

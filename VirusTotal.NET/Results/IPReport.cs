@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
 
-namespace VirusTotalNET.Objects
+namespace VirusTotalNET.Results
 {
     public class IPReport
     {

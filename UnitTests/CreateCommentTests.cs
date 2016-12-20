@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using UnitTests.TestInternals;
+using Xunit;
 
 namespace UnitTests
 {

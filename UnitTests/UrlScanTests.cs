@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VirusTotalNET.Objects;
+using UnitTests.TestInternals;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests
@@ -11,7 +13,7 @@ namespace UnitTests
         [Fact]
         public async Task ScanKnownUrl()
         {
-            ScanResult fileResult = await VirusTotal.ScanUrl("google.com");
+            UrlScanResult fileResult = await VirusTotal.ScanUrl("google.com");
             Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
@@ -20,9 +22,9 @@ namespace UnitTests
         {
             string[] urls = { "google.se", "http://google.com", "https://virustotal.com" };
 
-            List<ScanResult> urlScans = await VirusTotal.ScanUrls(urls);
+            List<UrlScanResult> urlScans = await VirusTotal.ScanUrls(urls);
 
-            foreach (ScanResult urlScan in urlScans)
+            foreach (UrlScanResult urlScan in urlScans)
             {
                 Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
             }
@@ -31,7 +33,7 @@ namespace UnitTests
         [Fact]
         public async Task ScanUnknownUrl()
         {
-            ScanResult fileResult = await VirusTotal.ScanUrl("VirusTotal.NET" + Guid.NewGuid() + ".com");
+            UrlScanResult fileResult = await VirusTotal.ScanUrl("VirusTotal.NET" + Guid.NewGuid() + ".com");
             Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
@@ -40,9 +42,9 @@ namespace UnitTests
         {
             string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
 
-            List<ScanResult> urlScans = await VirusTotal.ScanUrls(urls);
+            List<UrlScanResult> urlScans = await VirusTotal.ScanUrls(urls);
 
-            foreach (ScanResult urlScan in urlScans)
+            foreach (UrlScanResult urlScan in urlScans)
             {
                 Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
             }

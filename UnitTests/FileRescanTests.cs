@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using UnitTests.TestInternals;
 using VirusTotalNET;
-using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests
@@ -16,7 +18,7 @@ namespace UnitTests
             FileInfo fileInfo = new FileInfo("EICAR.txt");
             File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
-            ScanResult fileResult = await VirusTotal.RescanFile(fileInfo);
+            RescanResult fileResult = await VirusTotal.RescanFile(fileInfo);
 
             //It should always be in the VirusTotal database. We expect it to rescan it
             Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
@@ -31,12 +33,12 @@ namespace UnitTests
         [Fact]
         public async Task RescanUnknownFile()
         {
-            string guid = "VirusTotal.NET" + Guid.NewGuid();
+            IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
 
             FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
-            File.WriteAllText(fileInfo.FullName, guid);
+            File.WriteAllText(fileInfo.FullName, "VirusTotal.NET" + Guid.NewGuid());
 
-            ScanResult fileResult = await VirusTotal.RescanFile(fileInfo);
+            RescanResult fileResult = await VirusTotal.RescanFile(fileInfo);
 
             //It should not be in the VirusTotal database already, which means it should return error.
             Assert.Equal(ScanResponseCode.Error, fileResult.ResponseCode);
@@ -60,10 +62,12 @@ namespace UnitTests
         [Fact]
         public async Task RescanLargeFile()
         {
+            IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
+
             //Since rescan works on hashes, we expect the hash of this empty file (which is larger than the limit) is not present in the database.
             byte[] bytes = new byte[99 * 1023 * 1024]; //the weird size is because VT has some weird empty files in its database.
             string hash = HashHelper.GetMD5(bytes);
-            ScanResult result = await VirusTotal.RescanFile(hash);
+            RescanResult result = await VirusTotal.RescanFile(hash);
             Assert.Equal(ScanResponseCode.Error, result.ResponseCode);
         }
     }

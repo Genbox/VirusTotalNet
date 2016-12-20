@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using UnitTests.TestInternals;
 using VirusTotalNET.Exceptions;
-using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests

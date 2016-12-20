@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
-using VirusTotalNET.Objects;
+using UnitTests.TestInternals;
+using VirusTotalNET.ResponseCodes;
+using VirusTotalNET.Results;
 using Xunit;
 
 namespace UnitTests

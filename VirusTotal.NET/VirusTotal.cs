@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using VirusTotalNET.Exceptions;
-using VirusTotalNET.Objects;
+using VirusTotalNET.Results;
 
 namespace VirusTotalNET
 {
@@ -37,6 +37,7 @@ namespace VirusTotalNET
 
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.AllowAutoRedirect = false;
+
             _serializer = JsonSerializer.Create();
 
             _client = new HttpClient(_httpClientHandler);
@@ -46,6 +47,11 @@ namespace VirusTotalNET
             FileSizeLimit = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total
             RestrictSizeLimits = true;
             RestrictNumberOfResources = true;
+        }
+
+        internal VirusTotal(string apiKey, JsonSerializerSettings settings) : this(apiKey)
+        {
+            _serializer = JsonSerializer.Create(settings);
         }
 
         /// <summary>
@@ -232,7 +238,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the file.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public Task<ScanResult> RescanFile(FileInfo file)
+        public Task<RescanResult> RescanFile(FileInfo file)
         {
             return RescanFile(GetResourcesFromFiles(file).First());
         }
@@ -242,7 +248,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the file.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public Task<ScanResult> RescanFile(byte[] file)
+        public Task<RescanResult> RescanFile(byte[] file)
         {
             return RescanFile(GetResourcesFromFiles(file).First());
         }
@@ -253,7 +259,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> RescanFiles(IEnumerable<byte[]> files)
+        public Task<List<RescanResult>> RescanFiles(IEnumerable<byte[]> files)
         {
             return RescanFiles(GetResourcesFromFiles(files.ToArray()));
         }
@@ -264,7 +270,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> RescanFiles(IEnumerable<FileInfo> files)
+        public Task<List<RescanResult>> RescanFiles(IEnumerable<FileInfo> files)
         {
             return RescanFiles(GetResourcesFromFiles(files.ToArray()));
         }
@@ -275,7 +281,7 @@ namespace VirusTotalNET
         /// Note: Before requesting a rescan you should retrieve the latest report on the files.
         /// </summary>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> RescanFiles(IEnumerable<Stream> streams)
+        public Task<List<RescanResult>> RescanFiles(IEnumerable<Stream> streams)
         {
             return RescanFiles(GetResourcesFromFiles(streams.ToArray()));
         }
@@ -291,7 +297,7 @@ namespace VirusTotalNET
         /// Note: that the files must already be present in the files store.
         /// </param>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> RescanFiles(IEnumerable<string> resourceList)
+        public Task<List<RescanResult>> RescanFiles(IEnumerable<string> resourceList)
         {
             string[] hashes = resourceList as string[] ?? resourceList.ToArray();
 
@@ -311,7 +317,7 @@ namespace VirusTotalNET
             values.Add("resource", string.Join(",", hashes));
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResults<List<ScanResult>>("file/rescan", HttpMethod.Post, CreateContent(values));
+            return GetResults<List<RescanResult>>("file/rescan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -320,7 +326,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="resource">A hash of the file. It can be an MD5, SHA1 or SHA256</param>
         /// <returns>The scan results.</returns>
-        public Task<ScanResult> RescanFile(string resource)
+        public Task<RescanResult> RescanFile(string resource)
         {
             if (string.IsNullOrWhiteSpace(resource))
                 throw new ArgumentException("You have to supply a resource.", nameof(resource));
@@ -332,7 +338,7 @@ namespace VirusTotalNET
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResults<ScanResult>("file/rescan", HttpMethod.Post, CreateContent(values));
+            return GetResults<RescanResult>("file/rescan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -441,7 +447,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="url">The url to process.</param>
         /// <returns>The scan results.</returns>
-        public Task<ScanResult> ScanUrl(string url)
+        public Task<UrlScanResult> ScanUrl(string url)
         {
             return ScanUrl(UrlToUri(new[] { url }).First());
         }
@@ -452,7 +458,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="urlList">The urls to process.</param>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> ScanUrls(IEnumerable<string> urlList)
+        public Task<List<UrlScanResult>> ScanUrls(IEnumerable<string> urlList)
         {
             return ScanUrls(UrlToUri(urlList));
         }
@@ -463,7 +469,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="urlList">The urls to process.</param>
         /// <returns>The scan results.</returns>
-        public Task<List<ScanResult>> ScanUrls(IEnumerable<Uri> urlList)
+        public Task<List<UrlScanResult>> ScanUrls(IEnumerable<Uri> urlList)
         {
             IEnumerable<Uri> urls = urlList as Uri[] ?? urlList.ToArray();
 
@@ -478,7 +484,7 @@ namespace VirusTotalNET
             values.Add("url", string.Join(Environment.NewLine, urls));
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<List<ScanResult>>("url/scan", HttpMethod.Post, CreateContent(values));
+            return GetResults<List<UrlScanResult>>("url/scan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -487,7 +493,7 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="url">The url to process.</param>
         /// <returns>The scan results.</returns>
-        public Task<ScanResult> ScanUrl(Uri url)
+        public Task<UrlScanResult> ScanUrl(Uri url)
         {
             if (url == null)
                 throw new ArgumentNullException(nameof(url), "You have to supply an URL.");
@@ -497,7 +503,7 @@ namespace VirusTotalNET
             values.Add("url", url.ToString());
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<ScanResult>("url/scan", HttpMethod.Post, CreateContent(values));
+            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>

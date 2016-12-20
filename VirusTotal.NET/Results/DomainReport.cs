@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using VirusTotalNET.DateTimeParsers;
+using VirusTotalNET.Objects;
+using VirusTotalNET.ResponseCodes;
 
-namespace VirusTotalNET.Objects
+namespace VirusTotalNET.Results
 {
     public class DomainReport
     {
@@ -24,10 +27,10 @@ namespace VirusTotalNET.Objects
         public List<string> Categories { get; set; }
 
         [JsonProperty("detected_communicating_samples")]
-        public List<Sample> DetectedCommunicatingSamples { get; set; }
+        public List<SampleWithDate> DetectedCommunicatingSamples { get; set; }
 
         [JsonProperty("detected_downloaded_samples")]
-        public List<Sample> DetectedDownloadedSamples { get; set; }
+        public List<SampleWithDate> DetectedDownloadedSamples { get; set; }
 
         [JsonProperty("detected_referrer_samples")]
         public List<Sample> DetectedReferrerSamples { get; set; }
@@ -61,10 +64,10 @@ namespace VirusTotalNET.Objects
         public string TrendMicroCategory { get; set; }
 
         [JsonProperty("undetected_communicating_samples")]
-        public List<Sample> UndetectedCommunicatingSamples { get; set; }
+        public List<SampleWithDate> UndetectedCommunicatingSamples { get; set; }
 
         [JsonProperty("undetected_downloaded_samples")]
-        public List<Sample> UndetectedDownloadedSamples { get; set; }
+        public List<SampleWithDate> UndetectedDownloadedSamples { get; set; }
 
         [JsonProperty("undetected_referrer_samples")]
         public List<Sample> UndetectedReferrerSamples { get; set; }
@@ -85,18 +88,8 @@ namespace VirusTotalNET.Objects
         public string WhoIs { get; set; }
 
         [JsonProperty("whois_timestamp")]
-        public string WhoIsTimestamp { get; set; }
-
-        public DateTime? WhoIsDateTime
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(WhoIsTimestamp))
-                    return null;
-
-                return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
-            }
-        }
+        [JsonConverter(typeof(UnixTimeConverter))]
+        public DateTime WhoIsTimestamp { get; set; }
 
         [JsonProperty("WOT domain info")]
         public WOTInfo WOTDomainInfo { get; set; }
