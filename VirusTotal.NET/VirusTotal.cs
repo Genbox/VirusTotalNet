@@ -20,7 +20,6 @@ namespace VirusTotalNET
         private bool _useTls;
         private readonly HttpClientHandler _httpClientHandler;
         private readonly Dictionary<string, string> _defaultValues;
-        private readonly Encoding _encoding;
         private readonly JsonSerializer _serializer;
 
         /// <summary>
@@ -38,7 +37,6 @@ namespace VirusTotalNET
 
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.AllowAutoRedirect = false;
-            _encoding = new UTF8Encoding(false);
             _serializer = JsonSerializer.Create();
 
             _client = new HttpClient(_httpClientHandler);
@@ -760,7 +758,7 @@ namespace VirusTotalNET
                 throw new Exception("There were no content in the response.");
 
             using (Stream responseStream = await response.Content.ReadAsStreamAsync())
-            using (StreamReader sr = new StreamReader(responseStream, _encoding))
+            using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
             using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
             {
                 jsonTextReader.CloseInput = false;

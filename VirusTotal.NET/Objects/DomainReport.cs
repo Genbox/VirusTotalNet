@@ -94,7 +94,7 @@ namespace VirusTotalNET.Objects
                 if (string.IsNullOrWhiteSpace(WhoIsTimestamp))
                     return null;
 
-                return DateTimeOffset.FromUnixTimeSeconds((long)decimal.Parse(WhoIsTimestamp)).DateTime;
+                return UnixTimeHelper.FromUnix(double.Parse(WhoIsTimestamp));
             }
         }
 
