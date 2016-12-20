@@ -2,49 +2,35 @@
 
 ### Features
 
-* Based on RestSharp (http://restsharp.org) to deserialize the VirusTotal JSON into objects
+* Fully ayncronous API
 * Scan, rescan and get report of scanned files
 * Scan websites and files
 * Support for HTTP and HTTPS
-* Support for checking if files have been scanned before
+* Support IP and domain reports
 
 ### Examples
-
-Here is the simplest form of getting data from VirusTotal:
 
 ```csharp
 static void Main(string[] args)
 {
-    VirusTotal virusTotal = new VirusTotal("INSERT API KEY HERE");
+    VirusTotal virusTotal = new VirusTotal("YOUR API KEY HERE");
 
-    //Use HTTPS instead of HTTP
-    virusTotal.UseTLS = true;
+	//Use HTTPS instead of HTTP
+	virusTotal.UseTLS = true;
 
-    FileInfo fileInfo = new FileInfo("testfile.txt");
+	//Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
+	File.WriteAllText("EICAR.txt", @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
-    //Create a new file
-    File.WriteAllText(fileInfo.FullName, "This is a test file!");
+	//Check if the file has been scanned before.
+	FileReport fileReport = await virusTotal.GetFileReport(new FileInfo("EICAR.txt");
 
-	 //Check if the file has been scanned before.
-	Report fileReport = virusTotal.GetFileReport(fileInfo).First();
-	bool hasFileBeenScannedBefore = fileReport.ResponseCode == 1;
-
-    if (hasFileBeenScannedBefore)
-    {
-        Console.WriteLine(fileReport.ScanId);
-    }
-    else
-    {
-        ScanResult fileResults = virusTotal.ScanFile(fileInfo);
-		Console.WriteLine(fileResults.VerboseMsg);
-    }
+	Console.WriteLine("File has been scanned before: " + (fileReport.ResponseCode == ReportResponseCode.Present ? "Yes" : "No"));
 }
 ```
 
 Output:
 ```
 File has been scanned before: True
-Scan finished, scan information embedded in this object
 ```
 
 For more examples, take a look at the VirusTotal.NET Client included in the project.
