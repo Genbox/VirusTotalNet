@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using VirusTotalNET.Exceptions;
 using VirusTotalNET.Results;
 
@@ -186,7 +187,7 @@ namespace VirusTotalNET
             multi.Add(CreateFileContent(fileStream, filename, "application/octet-stream"));
 
             //https://www.virustotal.com/vtapi/v2/file/scan
-            return GetResults<ScanResult>("file/scan", HttpMethod.Post, multi);
+            return GetResult<ScanResult>("file/scan", HttpMethod.Post, multi);
         }
 
         /// <summary>
@@ -317,7 +318,7 @@ namespace VirusTotalNET
             values.Add("resource", string.Join(",", hashes));
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResults<List<RescanResult>>("file/rescan", HttpMethod.Post, CreateContent(values));
+            return GetResults<RescanResult>("file/rescan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -338,7 +339,7 @@ namespace VirusTotalNET
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResults<RescanResult>("file/rescan", HttpMethod.Post, CreateContent(values));
+            return GetResult<RescanResult>("file/rescan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -418,7 +419,7 @@ namespace VirusTotalNET
             values.Add("resource", string.Join(",", hashes));
 
             //https://www.virustotal.com/vtapi/v2/file/report
-            return GetResults<List<FileReport>>("file/report", HttpMethod.Post, CreateContent(values));
+            return GetResults<FileReport>("file/report", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -438,7 +439,7 @@ namespace VirusTotalNET
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/report
-            return GetResults<FileReport>("file/report", HttpMethod.Post, CreateContent(values));
+            return GetResult<FileReport>("file/report", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -484,7 +485,7 @@ namespace VirusTotalNET
             values.Add("url", string.Join(Environment.NewLine, urls));
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<List<UrlScanResult>>("url/scan", HttpMethod.Post, CreateContent(values));
+            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -503,7 +504,7 @@ namespace VirusTotalNET
             values.Add("url", url.ToString());
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateContent(values));
+            return GetResult<UrlScanResult>("url/scan", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -553,7 +554,7 @@ namespace VirusTotalNET
                 values.Add("scan", "1");
 
             //Output
-            return GetResults<List<UrlReport>>("url/report", HttpMethod.Post, CreateContent(values));
+            return GetResults<UrlReport>("url/report", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -576,7 +577,7 @@ namespace VirusTotalNET
                 values.Add("scan", "1");
 
             //Output
-            return GetResults<UrlReport>("url/report", HttpMethod.Post, CreateContent(values));
+            return GetResult<UrlReport>("url/report", HttpMethod.Post, CreateContent(values));
         }
 
         /// <summary>
@@ -631,7 +632,7 @@ namespace VirusTotalNET
                 throw new ArgumentException("Only IPv4 addresses are supported", nameof(ip));
 
             //Hack because VT thought it was a good idea to have this API call as GET
-            return GetResults<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
+            return GetResult<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -663,7 +664,7 @@ namespace VirusTotalNET
             values.Add("domain", domain);
 
             //Hack because VT thought it was a good idea to have this API call as GET
-            return GetResults<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
+            return GetResult<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -707,7 +708,7 @@ namespace VirusTotalNET
             values.Add("comment", comment);
 
             //https://www.virustotal.com/vtapi/v2/comments/put
-            return GetResults<ScanResult>("comments/put", HttpMethod.Post, CreateContent(values));
+            return GetResult<ScanResult>("comments/put", HttpMethod.Post, CreateContent(values));
         }
 
         private FormUrlEncodedContent CreateContent(Dictionary<string, string> values)
@@ -744,7 +745,40 @@ namespace VirusTotalNET
             return string.Format("{0}://www.virustotal.com/url/{1}/analysis/", UseTLS ? "https" : "http", HashHelper.GetSHA256(NormalizeUrl(url)));
         }
 
-        private async Task<T> GetResults<T>(string url, HttpMethod method, HttpContent content)
+        private async Task<List<T>> GetResults<T>(string url, HttpMethod method, HttpContent content)
+        {
+            HttpResponseMessage response = await SendRequest<T>(url, method, content);
+
+            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
+            using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
+            using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
+            {
+                jsonTextReader.CloseInput = false;
+
+                JToken token = JToken.Load(jsonTextReader);
+
+                if (token.Type == JTokenType.Array)
+                    return token.ToObject<List<T>>(_serializer);
+
+                return new List<T> { token.ToObject<T>(_serializer) };
+            }
+        }
+
+        private async Task<T> GetResult<T>(string url, HttpMethod method, HttpContent content)
+        {
+            HttpResponseMessage response = await SendRequest<T>(url, method, content);
+
+            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
+            using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
+            using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
+            {
+                jsonTextReader.CloseInput = false;
+
+                return _serializer.Deserialize<T>(jsonTextReader);
+            }
+        }
+
+        private async Task<HttpResponseMessage> SendRequest<T>(string url, HttpMethod method, HttpContent content)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, url);
             request.Content = content;
@@ -763,13 +797,7 @@ namespace VirusTotalNET
             if (string.IsNullOrWhiteSpace(response.Content.ToString()))
                 throw new Exception("There were no content in the response.");
 
-            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
-            using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
-            using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
-            {
-                jsonTextReader.CloseInput = false;
-                return _serializer.Deserialize<T>(jsonTextReader);
-            }
+            return response;
         }
 
         private string NormalizeUrl(string url)
