@@ -23,37 +23,14 @@
         "System.Linq": "4.3.0",
         "System.Net.Primitives": "4.3.0",
         "System.Security.Cryptography.Algorithms": "4.3.0",
-        "System.Runtime.Extensions": "4.3.0"
+        "System.Runtime.Extensions": "4.3.0",
+        "System.Dynamic.Runtime": "4.0.0"
       }
     },
     "net45": {
       "dependencies": {
-        "System.Net.Http": "4.0.0"
-      }
-    },
-    "net451": {
-      "dependencies": {
-        "System.Net.Http": "4.0.0"
-      }
-    },
-    "net452": {
-      "dependencies": {
-        "System.Net.Http": "4.0.0"
-      }
-    },
-    "net46": {
-      "dependencies": {
-        "System.Net.Http": "4.0.0"
-      }
-    },
-    "net461": {
-      "dependencies": {
-        "System.Net.Http": "4.0.0"
-      }
-    },
-    "net462": {
-      "dependencies": {
-        "System.Net.Http": "4.0.0"
+        "System.Net.Http": "4.0.0",
+        "System.Dynamic.Runtime": "4.0.0"
       }
     }
   },
