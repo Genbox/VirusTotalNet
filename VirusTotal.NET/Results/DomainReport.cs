@@ -87,7 +87,7 @@ namespace VirusTotalNET.Results
         [JsonProperty("whois")]
         public string WhoIs { get; set; }
 
-        [JsonProperty("whois_timestamp")]
+        [JsonProperty("whois_timestamp", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(UnixTimeConverter))]
         public DateTime WhoIsTimestamp { get; set; }
 

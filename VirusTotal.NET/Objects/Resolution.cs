@@ -5,7 +5,7 @@ namespace VirusTotalNET.Objects
 {
     public class Resolution
     {
-        [JsonProperty("last_resolved")]
+        [JsonProperty("last_resolved", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime LastResolved { get; set; }
 
         [JsonProperty("ip_address")]
