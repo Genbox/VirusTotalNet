@@ -2,7 +2,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace UnitTests.TestInternals
+namespace VirusTotalNET.UnitTests.TestInternals
 {
     //This code comes from: https://github.com/LordMike/TMDbLib/blob/master/TMDbLibTests/JsonHelpers/FailingContractResolver.cs
 

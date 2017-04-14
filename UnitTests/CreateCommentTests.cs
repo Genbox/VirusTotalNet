@@ -1,7 +1,7 @@
-﻿using UnitTests.TestInternals;
+﻿using VirusTotalNET.UnitTests.TestInternals;
 using Xunit;
 
-namespace UnitTests
+namespace VirusTotalNET.UnitTests
 {
     public class CreateCommentTests : TestBase
     {

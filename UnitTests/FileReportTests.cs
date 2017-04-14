@@ -1,14 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using UnitTests.TestInternals;
-using VirusTotalNET;
 using VirusTotalNET.Exceptions;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
+using VirusTotalNET.UnitTests.TestInternals;
 using Xunit;
 
-namespace UnitTests
+namespace VirusTotalNET.UnitTests
 {
     public class FileReportTests : TestBase
     {

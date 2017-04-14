@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using UnitTests.TestInternals;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
+using VirusTotalNET.UnitTests.TestInternals;
 using Xunit;
 
-namespace UnitTests
+namespace VirusTotalNET.UnitTests
 {
     public class IPReportTests : TestBase
     {

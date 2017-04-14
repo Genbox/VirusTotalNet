@@ -5,9 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using VirusTotalNET;
 
-namespace UnitTests.TestInternals
+namespace VirusTotalNET.UnitTests.TestInternals
 {
     //This code comes from https://github.com/LordMike/TMDbLib/blob/master/TMDbLibTests/JsonHelpers/TestBase.cs
 
