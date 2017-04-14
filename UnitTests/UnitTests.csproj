@@ -11,6 +11,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <RootNamespace>VirusTotalNET.UnitTests</RootNamespace>
+    <Version>1.5.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

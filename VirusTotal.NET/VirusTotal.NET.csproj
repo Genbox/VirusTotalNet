@@ -16,6 +16,7 @@
     <Description>A full implementation of the VirusTotal 2.0 API</Description>
     <Authors>Ian Qvist</Authors>
     <PackageTags>VirusTotal</PackageTags>
+    <Version>1.5.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
