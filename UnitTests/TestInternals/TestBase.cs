@@ -28,6 +28,8 @@ namespace VirusTotalNET.UnitTests.TestInternals
             settings.Error = Error;
 
             VirusTotal = new VirusTotal("YOUR API KEY HERE", settings);
+            VirusTotal.DumpRawJSON = true;
+            VirusTotal.DumpFolder = @"%TEMP%\UnitTests\";
         }
 
         protected VirusTotal VirusTotal { get; }
