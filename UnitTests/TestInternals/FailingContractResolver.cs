@@ -12,8 +12,8 @@ namespace VirusTotalNET.UnitTests.TestInternals
         {
             JsonProperty res = base.CreateProperty(member, memberSerialization);
 
+            // If we haven't explicitly stated that a field is not needed, we require it for compliance
             if (!res.Ignored)
-                // If we haven't explicitly stated that a field is not needed, we require it for compliance
                 res.Required = Required.AllowNull;
 
             return res;
