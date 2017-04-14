@@ -10,5 +10,7 @@ namespace VirusTotalNET.Objects
 
         [JsonProperty("ip_address")]
         public string IPAddress { get; set; }
+
+        public string Hostname { get; set; }
     }
 }
