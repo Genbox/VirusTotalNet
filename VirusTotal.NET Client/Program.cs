@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using VirusTotalNET;
 using VirusTotalNET.Objects;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
 
-namespace VirusTotalNETClient
+namespace VirusTotalNET.Client
 {
     class Program
     {
