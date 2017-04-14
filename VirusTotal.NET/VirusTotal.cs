@@ -108,6 +108,9 @@ namespace VirusTotalNET
             }
         }
 
+        /// <summary>
+        /// The user-agent to use when doing queries
+        /// </summary>
         public string UserAgent { get { return _client.DefaultRequestHeaders.UserAgent.ToString(); } set { _client.DefaultRequestHeaders.Add("User-Agent", value); } }
 
         /// <summary>
@@ -328,7 +331,7 @@ namespace VirusTotalNET
             }
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", string.Join(",", hashes));
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -349,7 +352,7 @@ namespace VirusTotalNET
             ValidateResource(resource);
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -429,7 +432,7 @@ namespace VirusTotalNET
             }
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", string.Join(",", hashes));
 
             //https://www.virustotal.com/vtapi/v2/file/report
@@ -449,7 +452,7 @@ namespace VirusTotalNET
             ValidateResource(resource);
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/report
@@ -495,7 +498,7 @@ namespace VirusTotalNET
                 throw new ResourceLimitException("Too many URLs. There is a maximum of 25 URLs at the same time.");
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("url", string.Join(Environment.NewLine, urls));
 
             //https://www.virustotal.com/vtapi/v2/url/scan
@@ -514,7 +517,7 @@ namespace VirusTotalNET
                 throw new ArgumentNullException(nameof(url), "You have to supply an URL.");
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("url", url.ToString());
 
             //https://www.virustotal.com/vtapi/v2/url/scan
@@ -560,7 +563,7 @@ namespace VirusTotalNET
                 throw new ResourceLimitException("Too many URLs. There is a maximum of 4 urls at the time.");
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", string.Join(Environment.NewLine, urls));
 
             //Optional
@@ -583,7 +586,7 @@ namespace VirusTotalNET
                 throw new ArgumentNullException(nameof(url), "You have to supply an URL.");
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", url.ToString());
 
             //Optional
@@ -674,7 +677,7 @@ namespace VirusTotalNET
                 throw new ArgumentException("You have to supply a domain.", nameof(domain));
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("domain", domain);
 
             //Hack because VT thought it was a good idea to have this API call as GET
@@ -717,7 +720,7 @@ namespace VirusTotalNET
                 throw new ArgumentException("Comment must not be null or whitespace", nameof(comment));
 
             //Required
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("resource", resource);
             values.Add("comment", comment);
 
@@ -725,7 +728,7 @@ namespace VirusTotalNET
             return GetResult<ScanResult>("comments/put", HttpMethod.Post, CreateContent(values));
         }
 
-        private FormUrlEncodedContent CreateContent(Dictionary<string, string> values)
+        private FormUrlEncodedContent CreateContent(IDictionary<string, string> values)
         {
             return new FormUrlEncodedContent(_defaultValues.Concat(values));
         }
