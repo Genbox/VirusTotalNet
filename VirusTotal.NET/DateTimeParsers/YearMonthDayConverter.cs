@@ -17,10 +17,13 @@ namespace VirusTotalNET.DateTimeParsers
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            string value = reader.Value as string;
+            if (reader.Value == null)
+                return DateTime.MinValue;
 
-            if (value == null)
+            if (!(reader.Value is string))
                 throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+
+            string value = (string)reader.Value;
 
             DateTime result;
             if (DateTime.TryParseExact(value, "yyyyMMdd", _culture, DateTimeStyles.AllowWhiteSpaces, out result))

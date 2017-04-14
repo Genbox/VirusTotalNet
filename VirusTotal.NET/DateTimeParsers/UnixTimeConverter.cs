@@ -22,7 +22,7 @@ namespace VirusTotalNET.DateTimeParsers
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.Value == null)
-                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+                return 0;
 
             double value;
             try
