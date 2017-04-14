@@ -48,12 +48,26 @@ namespace VirusTotalNET
             FileSizeLimit = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total
             RestrictSizeLimits = true;
             RestrictNumberOfResources = true;
+            DumpRawJSON = false;
+            DumpFolder = "%TEMP%";
         }
 
         internal VirusTotal(string apiKey, JsonSerializerSettings settings) : this(apiKey)
         {
             _serializer = JsonSerializer.Create(settings);
         }
+
+        /// <summary>
+        /// Dumps the raw JSON from VirusTotal into the folder specified in "DumpFolder". For debug purposes only.
+        /// Defaults to false.
+        /// </summary>
+        public bool DumpRawJSON { get; set; }
+
+        /// <summary>
+        /// When DumpRawJSON is set to true, it dumps the raw JSON files to this folder. The files are named [DateTimeInUTC]-[RandomGUID].json
+        /// Defaults to %TEMP%
+        /// </summary>
+        public string DumpFolder { get; set; }
 
         /// <summary>
         /// When true, we check the file size before uploading it to Virus Total. The file size restrictions are based on the Virusl Total public API 2.0 documentation.
@@ -760,7 +774,11 @@ namespace VirusTotalNET
                 if (token.Type == JTokenType.Array)
                     return token.ToObject<List<T>>(_serializer);
 
-                return new List<T> { token.ToObject<T>(_serializer) };
+                List<T> list = new List<T> { token.ToObject<T>(_serializer) };
+
+                DumpJSONIfDebug(responseStream);
+
+                return list;
             }
         }
 
@@ -774,8 +792,30 @@ namespace VirusTotalNET
             {
                 jsonTextReader.CloseInput = false;
 
-                return _serializer.Deserialize<T>(jsonTextReader);
+                T obj = _serializer.Deserialize<T>(jsonTextReader);
+
+                DumpJSONIfDebug(responseStream);
+
+                return obj;
             }
+        }
+
+        private void DumpJSONIfDebug(Stream stream)
+        {
+            if (!DumpRawJSON)
+                return;
+
+            stream.Position = 0;
+            string path = Environment.ExpandEnvironmentVariables(DumpFolder);
+
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            string filename = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss") + "-" + Guid.NewGuid() + ".json";
+            string filePath = Path.Combine(path, filename);
+
+            using (FileStream fs = File.OpenWrite(filePath))
+                stream.CopyTo(fs);
         }
 
         private async Task<HttpResponseMessage> SendRequest<T>(string url, HttpMethod method, HttpContent content)
