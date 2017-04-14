@@ -1,6 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using VirusTotalNET.Exceptions;
 
 namespace VirusTotalNET.DateTimeParsers
 {
@@ -20,7 +21,19 @@ namespace VirusTotalNET.DateTimeParsers
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            double value = (double)reader.Value;
+            if (reader.Value == null)
+                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+
+            double value;
+            try
+            {
+                value = (double)reader.Value;
+            }
+            catch (InvalidCastException)
+            {
+                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+            }
+
             return FromUnix(value);
         }
     }

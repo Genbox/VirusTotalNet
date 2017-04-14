@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using VirusTotalNET.Exceptions;
 
 namespace VirusTotalNET.DateTimeParsers
 {
@@ -19,13 +20,13 @@ namespace VirusTotalNET.DateTimeParsers
             string value = reader.Value as string;
 
             if (value == null)
-                throw new Exception("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
 
             DateTime result;
             if (DateTime.TryParseExact(value, "yyyyMMdd", _culture, DateTimeStyles.AllowWhiteSpaces, out result))
                 return result;
 
-            throw new Exception("Invalid datetime from VirusTotal. Tried to parse: " + value);
+            throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + value);
         }
     }
 }
