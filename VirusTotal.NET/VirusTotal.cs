@@ -40,6 +40,7 @@ namespace VirusTotalNET
             _httpClientHandler.AllowAutoRedirect = false;
 
             _serializer = JsonSerializer.Create();
+            _serializer.NullValueHandling = NullValueHandling.Ignore;
 
             _client = new HttpClient(_httpClientHandler);
 
@@ -772,16 +773,14 @@ namespace VirusTotalNET
             {
                 jsonTextReader.CloseInput = false;
 
+                DumpJSONIfDebug(responseStream);
+
                 JToken token = JToken.Load(jsonTextReader);
 
                 if (token.Type == JTokenType.Array)
                     return token.ToObject<List<T>>(_serializer);
 
-                List<T> list = new List<T> { token.ToObject<T>(_serializer) };
-
-                DumpJSONIfDebug(responseStream);
-
-                return list;
+                return new List<T> { token.ToObject<T>(_serializer) };
             }
         }
 
@@ -795,11 +794,9 @@ namespace VirusTotalNET
             {
                 jsonTextReader.CloseInput = false;
 
-                T obj = _serializer.Deserialize<T>(jsonTextReader);
-
                 DumpJSONIfDebug(responseStream);
 
-                return obj;
+                return _serializer.Deserialize<T>(jsonTextReader);
             }
         }
 
@@ -808,7 +805,6 @@ namespace VirusTotalNET
             if (!DumpRawJSON)
                 return;
 
-            stream.Position = 0;
             string path = Environment.ExpandEnvironmentVariables(DumpFolder);
 
             if (!Directory.Exists(path))
@@ -819,6 +815,8 @@ namespace VirusTotalNET
 
             using (FileStream fs = File.OpenWrite(filePath))
                 stream.CopyTo(fs);
+
+            stream.Position = 0;
         }
 
         private async Task<HttpResponseMessage> SendRequest<T>(string url, HttpMethod method, HttpContent content)
