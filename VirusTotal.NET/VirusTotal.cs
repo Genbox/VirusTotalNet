@@ -239,6 +239,33 @@ namespace VirusTotalNET
         }
 
         /// <summary>
+        /// Scan a file.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// </summary>
+        /// <param name="bytes">Bytes that will be scaned</param>
+        /// <param name="fileName">File name</param>
+        /// <returns>The scan results.</returns>
+        public ScanResult ScanFile(byte[] bytes, string fileName)
+        {
+            if (bytes == null || (bytes != null && !bytes.Any()))
+                throw new FileNotFoundException("No bytes received.");
+
+            //https://www.virustotal.com/vtapi/v2/file/scan
+            RestRequest request = new RestRequest("file/scan", Method.POST);
+
+            //Required
+            request.AddParameter("apikey", _apiKey);
+
+            if (bytes.Length <= FileSizeLimit)
+                request.AddFile("file", bytes, fileName);
+            else
+                throw new SizeLimitException("The filesize limit on VirusTotal is 32 MB. Your file is " + bytes.Length / 1024 / 1024 + " MB");
+
+            //Output
+            return GetResults<ScanResult>(request);
+        }
+
+        /// <summary>
         /// Scan multiple files.
         /// Note: It is highly encouraged to get the report of the files before scanning, in case it they already been scanned before.
         /// </summary>
