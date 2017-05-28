@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("VirusTotal.NET Client")]
-[assembly: AssemblyCopyright("Copyright Ian Qvist © 2016")]
+[assembly: AssemblyCopyright("Copyright Ian Qvist © 2017")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
