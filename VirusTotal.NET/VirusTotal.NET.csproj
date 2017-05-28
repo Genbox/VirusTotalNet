@@ -1,22 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.5.2</VersionPrefix>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
     <AssemblyName>VirusTotal.NET</AssemblyName>
     <PackageId>VirusTotal.NET</PackageId>
     <PackageProjectUrl>https://github.com/Genbox/VirusTotal.NET/</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Genbox/VirusTotal.NET/</RepositoryUrl>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <RootNamespace>VirusTotalNET</RootNamespace>
     <Description>A full implementation of the VirusTotal 2.0 API</Description>
     <Authors>Ian Qvist</Authors>
     <PackageTags>VirusTotal</PackageTags>
-    <Version>1.5.3</Version>
+    <PackageLicenseUrl>https://github.com/Genbox/VirusTotal.Net/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <AssemblyVersion>1.5.4.0</AssemblyVersion>
+    <FileVersion>1.5.4.0</FileVersion>
+    <Version>1.5.4</Version>
   </PropertyGroup>
 
   <ItemGroup>
