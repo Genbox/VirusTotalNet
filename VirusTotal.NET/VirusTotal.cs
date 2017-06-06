@@ -765,7 +765,7 @@ namespace VirusTotalNET
 
         private async Task<List<T>> GetResults<T>(string url, HttpMethod method, HttpContent content)
         {
-            HttpResponseMessage response = await SendRequest<T>(url, method, content);
+            HttpResponseMessage response = await SendRequest(url, method, content);
 
             using (Stream responseStream = await response.Content.ReadAsStreamAsync())
             using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
@@ -786,7 +786,7 @@ namespace VirusTotalNET
 
         private async Task<T> GetResult<T>(string url, HttpMethod method, HttpContent content)
         {
-            HttpResponseMessage response = await SendRequest<T>(url, method, content);
+            HttpResponseMessage response = await SendRequest(url, method, content);
 
             using (Stream responseStream = await response.Content.ReadAsStreamAsync())
             using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
@@ -819,7 +819,7 @@ namespace VirusTotalNET
             stream.Position = 0;
         }
 
-        private async Task<HttpResponseMessage> SendRequest<T>(string url, HttpMethod method, HttpContent content)
+        private async Task<HttpResponseMessage> SendRequest(string url, HttpMethod method, HttpContent content)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, url);
             request.Content = content;
