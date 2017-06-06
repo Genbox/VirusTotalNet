@@ -765,9 +765,9 @@ namespace VirusTotalNET
 
         private async Task<List<T>> GetResults<T>(string url, HttpMethod method, HttpContent content)
         {
-            HttpResponseMessage response = await SendRequest(url, method, content);
+            HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
-            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
+            using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
             using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
             {
@@ -786,9 +786,9 @@ namespace VirusTotalNET
 
         private async Task<T> GetResult<T>(string url, HttpMethod method, HttpContent content)
         {
-            HttpResponseMessage response = await SendRequest(url, method, content);
+            HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
-            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
+            using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
             using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
             {
@@ -824,7 +824,7 @@ namespace VirusTotalNET
             HttpRequestMessage request = new HttpRequestMessage(method, url);
             request.Content = content;
 
-            HttpResponseMessage response = await _client.SendAsync(request);
+            HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
                 throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
