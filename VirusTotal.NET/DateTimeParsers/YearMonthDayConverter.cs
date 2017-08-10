@@ -9,10 +9,12 @@ namespace VirusTotalNET.DateTimeParsers
     public class YearMonthDayConverter : DateTimeConverterBase
     {
         private readonly CultureInfo _culture = new CultureInfo("en-us");
+        private const string DateFormatString = "yyyyMMdd";
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            writer.DateFormatString = DateFormatString;
+            writer.WriteValue(value);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -26,7 +28,7 @@ namespace VirusTotalNET.DateTimeParsers
             string value = (string)reader.Value;
 
             DateTime result;
-            if (DateTime.TryParseExact(value, "yyyyMMdd", _culture, DateTimeStyles.AllowWhiteSpaces, out result))
+            if (DateTime.TryParseExact(value, DateFormatString, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
                 return result;
 
             throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + value);
