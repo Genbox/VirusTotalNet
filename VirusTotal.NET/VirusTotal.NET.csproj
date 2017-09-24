@@ -12,7 +12,7 @@
     <Authors>Ian Qvist</Authors>
     <PackageTags>VirusTotal</PackageTags>
     <PackageLicenseUrl>https://github.com/Genbox/VirusTotal.Net/blob/master/LICENSE.txt</PackageLicenseUrl>
-    <Version>1.5.5</Version>
+    <Version>1.6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

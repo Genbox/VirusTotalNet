@@ -5,7 +5,7 @@
     <AssemblyName>UnitTests</AssemblyName>
     <PackageId>UnitTests</PackageId>
     <RootNamespace>VirusTotalNET.UnitTests</RootNamespace>
-    <Version>1.5.4</Version>
+    <Version>1.6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
