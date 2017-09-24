@@ -20,12 +20,12 @@ namespace VirusTotalNET.UnitTests
             Assert.Equal(FileReportResponseCode.Present, fileReport.ResponseCode);
         }
 
-        [Fact]
-        public async Task GetReportForInvalidFile()
-        {
-            //TODO: I can't seem to provoke an error response code by sending resources that are invalid.
-            //They just seem to either give code 0 (notpresent) or an empty JSON response
-        }
+        //[Fact]
+        //public async Task GetReportForInvalidFile()
+        //{
+        //    //TODO: I can't seem to provoke an error response code by sending resources that are invalid.
+        //    //They just seem to either give code 0 (notpresent) or an empty JSON response
+        //}
 
         [Fact]
         public async Task GetMultipleReportForKnownFiles()
@@ -72,11 +72,10 @@ namespace VirusTotalNET.UnitTests
             //We ignore these fields due to unknown file
             IgnoreMissingJson(" / MD5", " / Permalink", " / Positives", " / scan_date", " / Scans", " / SHA1", " / SHA256", " / Total");
 
-            ScanResult result = await VirusTotal.ScanFileAsync(TestData.GetRandomFile(128,1).First(), TestData.TestFileName);
+            ScanResult result = await VirusTotal.ScanFileAsync(TestData.GetRandomFile(128, 1).First(), TestData.TestFileName);
 
             FileReport fileReport = await VirusTotal.GetFileReportAsync(result.ScanId);
 
-            //It should not be in the VirusTotal database already, which means it should return error.
             Assert.Equal(FileReportResponseCode.Queued, fileReport.ResponseCode);
         }
 

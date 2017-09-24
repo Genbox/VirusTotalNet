@@ -19,11 +19,11 @@ namespace VirusTotalNET.UnitTests
             Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
         }
 
-        [Fact]
-        public async Task RescanInvalidFile()
-        {
-            //TODO: Can't seem to provoke an error response code.
-        }
+        //[Fact]
+        //public async Task RescanInvalidFile()
+        //{
+        //    //TODO: Can't seem to provoke an error response code.
+        //}
 
         [Fact]
         public async Task RescanMultipleKnownFile()

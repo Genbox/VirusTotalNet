@@ -16,16 +16,16 @@ namespace VirusTotalNET.UnitTests
             Assert.Equal(DomainResponseCode.Present, report.ResponseCode);
         }
 
-        [Fact]
-        public async Task GetDomainReportInvalidDomain()
-        {
-            //TODO: I can't find a domain that VT does not think is valid.
-            //Domains tried:
-            //-
-            //.
-            //%20
-            //%2F
-        }
+        //[Fact]
+        //public async Task GetDomainReportInvalidDomain()
+        //{
+        //    //TODO: I can't find a domain that VT does not think is valid.
+        //    //Domains tried:
+        //    //-
+        //    //.
+        //    //%20
+        //    //%2F
+        //}
 
         [Fact]
         public async Task GetDomainReportUnknownDomain()

@@ -52,8 +52,19 @@ namespace VirusTotalNET
             _serializer = JsonSerializer.Create(settings);
         }
 
+        /// <summary>
+        /// Occurs when the raw JSON response is received from VirusTotal.
+        /// </summary>
         public event Action<byte[]> OnRawResponseReceived;
+
+        /// <summary>
+        /// Occurs just before we send a request to VirusTotal.
+        /// </summary>
         public event Action<HttpRequestMessage> OnHTTPRequestSending;
+
+        /// <summary>
+        /// Occurs right after a response has been received from VirusTotal.
+        /// </summary>
         public event Action<HttpResponseMessage> OnHTTPResponseReceived;
 
         /// <summary>
