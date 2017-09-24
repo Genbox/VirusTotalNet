@@ -736,17 +736,23 @@ namespace VirusTotalNET
         /// </summary>
         public string GetPublicFileScanLink(string resource)
         {
-            ResourcesHelper.ValidateResource(resource, false);
+            resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash);
 
-            return $"{(UseTLS ? "https" : "http")}://www.virustotal.com/file/{resource}/analysis/";
+            return ResourcesHelper.NormalizeUrl($"www.virustotal.com/#/file/{resource}/detection", UseTLS);
         }
 
         /// <summary>
         /// Gives you a link to a file analysis based on its hash.
+        /// Note: This actually hashes the file - if you have the hash already, use the overload that takes in a string.
         /// </summary>
-        /// <returns>A link to VirusTotal that contains the report</returns>
         public string GetPublicFileScanLink(FileInfo file)
         {
+            if (file == null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (!file.Exists)
+                throw new FileNotFoundException("The file you provided does not exist.", file.FullName);
+
             return GetPublicFileScanLink(ResourcesHelper.GetResourceIdentifier(file));
         }
 
@@ -756,7 +762,18 @@ namespace VirusTotalNET
         /// <returns>A link to VirusTotal that contains the report</returns>
         public string GetPublicUrlScanLink(string url)
         {
-            return $"{(UseTLS ? "https" : "http")}://www.virustotal.com/url/{ResourcesHelper.GetResourceIdentifier(url)}/analysis/";
+            url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL);
+
+            return ResourcesHelper.NormalizeUrl($"www.virustotal.com/#/url/{ResourcesHelper.GetResourceIdentifier(url)}/detection", UseTLS);
+        }
+
+        /// <summary>
+        /// Gives you a link to a URL analysis.
+        /// </summary>
+        /// <returns>A link to VirusTotal that contains the report</returns>
+        public string GetPublicUrlScanLink(Uri url)
+        {
+            return GetPublicUrlScanLink(url.ToString());
         }
 
         private async Task<IEnumerable<T>> GetResults<T>(string url, HttpMethod method, HttpContent content)
