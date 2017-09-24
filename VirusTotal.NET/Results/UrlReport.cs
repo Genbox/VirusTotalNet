@@ -9,7 +9,7 @@ namespace VirusTotalNET.Results
     public class UrlReport
     {
         /// <summary>
-        /// Filescan Id of the resource.
+        /// File scan id of the resource.
         /// </summary>
         [JsonProperty("filescan_id")]
         public string FileScanId { get; set; }
@@ -30,12 +30,6 @@ namespace VirusTotalNET.Results
         public string Resource { get; set; }
 
         /// <summary>
-        /// The response code. Use this to determine the status of the report.
-        /// </summary>
-        [JsonProperty("response_code")]
-        public ReportResponseCode ResponseCode { get; set; }
-
-        /// <summary>
         /// The date the resource was last scanned.
         /// </summary>
         [JsonProperty("scan_date")]
@@ -50,20 +44,23 @@ namespace VirusTotalNET.Results
         /// <summary>
         /// The scan results from each engine.
         /// </summary>
-        public Dictionary<string, ScanEngine> Scans { get; set; }
+        public Dictionary<string, UrlScanEngine> Scans { get; set; }
 
         /// <summary>
         /// How many engines scanned this resource.
         /// </summary>
         public int Total { get; set; }
 
-        /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
-        /// </summary>
         public string URL { get; set; }
 
         /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
+        /// The response code. Use this to determine the status of the report.
+        /// </summary>
+        [JsonProperty("response_code")]
+        public UrlReportResponseCode ResponseCode { get; set; }
+
+        /// <summary>
+        /// Contains the message that corresponds to the response code.
         /// </summary>
         [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }

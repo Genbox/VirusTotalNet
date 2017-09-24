@@ -1,6 +1,6 @@
 namespace VirusTotalNET.ResponseCodes
 {
-    public enum IPReportResponseCode
+    public enum UrlReportResponseCode
     {
         /// <summary>
         /// The item you searched for was not present in VirusTotal's dataset.
@@ -8,7 +8,7 @@ namespace VirusTotalNET.ResponseCodes
         NotPresent = 0,
 
         /// <summary>
-        /// The item was present and it could be retrieved.
+        /// The item was indeed present and it could be retrieved.
         /// </summary>
         Present = 1
     }

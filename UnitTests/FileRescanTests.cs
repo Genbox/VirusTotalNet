@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
@@ -13,20 +13,28 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task RescanKnownFile()
         {
-            //Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            FileInfo fileInfo = new FileInfo("EICAR.txt");
-            File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
-
-            RescanResult fileResult = await VirusTotal.RescanFile(fileInfo);
+            RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.EICARMalware);
 
             //It should always be in the VirusTotal database. We expect it to rescan it
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
-        public void RescanMultipleKnownFile()
+        public async Task RescanInvalidFile()
         {
-            //TODO
+            //TODO: Can't seem to provoke an error response code.
+        }
+
+        [Fact]
+        public async Task RescanMultipleKnownFile()
+        {
+            IEnumerable<RescanResult> fileResult = await VirusTotal.RescanFilesAsync(TestData.KnownHashes);
+
+            foreach (RescanResult rescanResult in fileResult)
+            {
+                //It should always be in the VirusTotal database. We expect it to rescan it
+                Assert.Equal(RescanResponseCode.Queued, rescanResult.ResponseCode);
+            }
         }
 
         [Fact]
@@ -34,40 +42,32 @@ namespace VirusTotalNET.UnitTests
         {
             IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
 
-            FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
-            File.WriteAllText(fileInfo.FullName, "VirusTotal.NET" + Guid.NewGuid());
-
-            RescanResult fileResult = await VirusTotal.RescanFile(fileInfo);
+            RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.GetRandomSHA1s(1).First());
 
             //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.Equal(ScanResponseCode.Error, fileResult.ResponseCode);
-        }
-
-        [Fact]
-        public void RescanMultipleUnknownFile()
-        {
-            //TODO
+            Assert.Equal(RescanResponseCode.ResourceNotFound, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task RescanSmallFile()
         {
-            ScanResult fileResult = await VirusTotal.ScanFile(new byte[1], "VirusTotal.NET-Test.txt");
+            RescanResult fileResult = await VirusTotal.RescanFileAsync(new byte[1]);
 
             //It has been scanned before, we expect it to return queued.
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
-        public async Task RescanLargeFile()
+        public async Task RescanBatchLimit()
         {
-            IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
+            IgnoreMissingJson("[array] / Permalink", "[array] / scan_id", "[array] / SHA256");
 
-            //Since rescan works on hashes, we expect the hash of this empty file (which is larger than the limit) is not present in the database.
-            byte[] bytes = new byte[99 * 1023 * 1024]; //the weird size is because VT has some weird empty files in its database.
-            string hash = HashHelper.GetMD5(bytes);
-            RescanResult result = await VirusTotal.RescanFile(hash);
-            Assert.Equal(ScanResponseCode.Error, result.ResponseCode);
+            VirusTotal.RestrictNumberOfResources = false;
+
+            IEnumerable<RescanResult> results = await VirusTotal.RescanFilesAsync(TestData.GetRandomSHA1s(50));
+
+            //We only expect 25 as VT simply returns 25 results no matter the batch size.
+            Assert.Equal(VirusTotal.RescanBatchSizeLimit, results.Count());
         }
     }
 }

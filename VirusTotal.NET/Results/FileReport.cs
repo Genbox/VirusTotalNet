@@ -29,12 +29,6 @@ namespace VirusTotalNET.Results
         public string Resource { get; set; }
 
         /// <summary>
-        /// The response code. Use this to determine the status of the report.
-        /// </summary>
-        [JsonProperty("response_code")]
-        public ReportResponseCode ResponseCode { get; set; }
-
-        /// <summary>
         /// The date the resource was last scanned.
         /// </summary>
         [JsonProperty("scan_date")]
@@ -67,7 +61,13 @@ namespace VirusTotalNET.Results
         public int Total { get; set; }
 
         /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
+        /// The response code. Use this to determine the status of the report.
+        /// </summary>
+        [JsonProperty("response_code")]
+        public FileReportResponseCode ResponseCode { get; set; }
+
+        /// <summary>
+        /// Contains the message that corresponds to the response code.
         /// </summary>
         [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }

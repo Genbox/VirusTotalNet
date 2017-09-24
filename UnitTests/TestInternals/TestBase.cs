@@ -12,7 +12,7 @@ namespace VirusTotalNET.UnitTests.TestInternals
 
     public abstract class TestBase : IDisposable
     {
-        private static readonly Regex NormalizeRegex = new Regex(@"\[[\d]+\]", RegexOptions.Compiled);
+        private static readonly Regex _normalizeRegex = new Regex(@"\[[\d]+\]", RegexOptions.Compiled);
         private readonly List<ErrorEventArgs> _errors = new List<ErrorEventArgs>();
         private readonly List<string> _ignoreMissingCSharp;
         private readonly List<string> _ignoreMissingJson;
@@ -22,17 +22,28 @@ namespace VirusTotalNET.UnitTests.TestInternals
             _ignoreMissingJson = new List<string>();
             _ignoreMissingCSharp = new List<string>();
 
+            ThrowOnMissingContract = true;
+
             JsonSerializerSettings settings = new JsonSerializerSettings();
             settings.MissingMemberHandling = MissingMemberHandling.Error;
             settings.ContractResolver = new FailingContractResolver();
             settings.Error = Error;
 
             VirusTotal = new VirusTotal("YOUR API KEY HERE", settings);
-            VirusTotal.DumpRawJSON = true;
-            VirusTotal.DumpFolder = @"%TEMP%\UnitTests\";
+            VirusTotal.UserAgent = "VirusTotal.NET unit tests";
+            VirusTotal.UseTLS = false;
+            
+            VirusTotal.OnRawResponseReceived += bytes =>
+            {
+                LastCallInJSON = Encoding.UTF8.GetString(bytes);
+            };
         }
 
         protected VirusTotal VirusTotal { get; }
+
+        protected bool ThrowOnMissingContract { get; set; }
+
+        protected string LastCallInJSON { get; set; }
 
         /// <summary>
         /// Ignores errors about missing JSON properties (Where C# properties are not set)
@@ -62,7 +73,7 @@ namespace VirusTotalNET.UnitTests.TestInternals
                 return;
 
             // Sort the errors
-            // Also deduplicate them, as there is no point in blasting us with multiple instances of the "same" error
+            // Also de-duplicate them, as there is no point in blasting us with multiple instances of the "same" error
             Dictionary<string, ErrorEventArgs> missingFieldInCSharp = new Dictionary<string, ErrorEventArgs>();
             Dictionary<string, ErrorEventArgs> missingPropertyInJson = new Dictionary<string, ErrorEventArgs>();
             Dictionary<string, ErrorEventArgs> other = new Dictionary<string, ErrorEventArgs>();
@@ -72,7 +83,7 @@ namespace VirusTotalNET.UnitTests.TestInternals
                 string key = error.ErrorContext.Path + " / " + error.ErrorContext.Member;
                 string errorMessage = error.ErrorContext.Error.Message;
 
-                key = NormalizeRegex.Replace(key, "[array]");
+                key = _normalizeRegex.Replace(key, "[array]");
 
                 if (errorMessage.StartsWith("Could not find member"))
                 {
@@ -141,8 +152,11 @@ namespace VirusTotalNET.UnitTests.TestInternals
                 sb.AppendLine();
             }
 
+            if (!ThrowOnMissingContract)
+                return;
+
             if (missingFieldInCSharp.Any() || missingPropertyInJson.Any() || other.Any())
-                throw new Exception(sb.ToString());
+                throw new Exception(sb + Environment.NewLine + "Raw JSON: " + Environment.NewLine + LastCallInJSON);
         }
     }
 }

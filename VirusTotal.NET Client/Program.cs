@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using VirusTotalNET.Objects;
 using VirusTotalNET.ResponseCodes;
@@ -28,13 +29,12 @@ namespace VirusTotalNET.Client
             virusTotal.UseTLS = true;
 
             //Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            FileInfo fileInfo = new FileInfo("EICAR.txt");
-            File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
+            byte[] eicar = Encoding.ASCII.GetBytes(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
             //Check if the file has been scanned before.
-            FileReport fileReport = await virusTotal.GetFileReport(fileInfo);
+            FileReport fileReport = await virusTotal.GetFileReportAsync(eicar);
 
-            bool hasFileBeenScannedBefore = fileReport.ResponseCode == ReportResponseCode.Present;
+            bool hasFileBeenScannedBefore = fileReport.ResponseCode == FileReportResponseCode.Present;
 
             Console.WriteLine("File has been scanned before: " + (hasFileBeenScannedBefore ? "Yes" : "No"));
 
@@ -45,15 +45,15 @@ namespace VirusTotalNET.Client
             }
             else
             {
-                ScanResult fileResult = await virusTotal.ScanFile(fileInfo);
+                ScanResult fileResult = await virusTotal.ScanFileAsync(eicar, "EICAR.txt");
                 PrintScan(fileResult);
             }
 
             Console.WriteLine();
 
-            UrlReport urlReport = await virusTotal.GetUrlReport(ScanUrl);
+            UrlReport urlReport = await virusTotal.GetUrlReportAsync(ScanUrl);
 
-            bool hasUrlBeenScannedBefore = urlReport.ResponseCode == ReportResponseCode.Present;
+            bool hasUrlBeenScannedBefore = urlReport.ResponseCode == UrlReportResponseCode.Present;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
 
             //If the url has been scanned before, the results are embedded inside the report.
@@ -63,7 +63,7 @@ namespace VirusTotalNET.Client
             }
             else
             {
-                UrlScanResult urlResult = await virusTotal.ScanUrl(ScanUrl);
+                UrlScanResult urlResult = await virusTotal.ScanUrlAsync(ScanUrl);
                 PrintScan(urlResult);
             }
         }
@@ -87,7 +87,7 @@ namespace VirusTotalNET.Client
             Console.WriteLine("Scan ID: " + fileReport.ScanId);
             Console.WriteLine("Message: " + fileReport.VerboseMsg);
 
-            if (fileReport.ResponseCode == ReportResponseCode.Present)
+            if (fileReport.ResponseCode == FileReportResponseCode.Present)
             {
                 foreach (KeyValuePair<string, ScanEngine> scan in fileReport.Scans)
                 {
@@ -103,9 +103,9 @@ namespace VirusTotalNET.Client
             Console.WriteLine("Scan ID: " + urlReport.ScanId);
             Console.WriteLine("Message: " + urlReport.VerboseMsg);
 
-            if (urlReport.ResponseCode == ReportResponseCode.Present)
+            if (urlReport.ResponseCode == UrlReportResponseCode.Present)
             {
-                foreach (KeyValuePair<string, ScanEngine> scan in urlReport.Scans)
+                foreach (KeyValuePair<string, UrlScanEngine> scan in urlReport.Scans)
                 {
                     Console.WriteLine("{0,-25} Detected: {1}", scan.Key, scan.Value.Detected);
                 }

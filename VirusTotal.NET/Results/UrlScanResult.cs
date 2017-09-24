@@ -17,15 +17,9 @@ namespace VirusTotalNET.Results
         public string Permalink { get; set; }
 
         /// <summary>
-        /// Id of the resource.
+        /// The resource.
         /// </summary>
         public string Resource { get; set; }
-
-        /// <summary>
-        /// The scan response code. Use this to determine the status of the scan.
-        /// </summary>
-        [JsonProperty("response_code")]
-        public ScanResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// The unique scan id of the resource.
@@ -33,8 +27,11 @@ namespace VirusTotalNET.Results
         [JsonProperty("scan_id")]
         public string ScanId { get; set; }
 
+        [JsonProperty("response_code")]
+        public UrlScanResponseCode ResponseCode { get; set; }
+
         /// <summary>
-        /// Contains a verbose message that corrosponds to the reponse code.
+        /// Contains the message that corresponds to the response code.
         /// </summary>
         [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }

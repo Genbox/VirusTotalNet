@@ -1,16 +1,11 @@
 namespace VirusTotalNET.ResponseCodes
 {
-    public enum ReportResponseCode
+    public enum FileReportResponseCode
     {
         /// <summary>
-        /// The requested item is still queued for analysis.
+        /// The resource is still being scanned
         /// </summary>
-        StillQueued = -2,
-
-        /// <summary>
-        /// There was an error in the request
-        /// </summary>
-        Error = -1,
+        Queued = -2,
 
         /// <summary>
         /// The item you searched for was not present in VirusTotal's dataset.
@@ -18,7 +13,7 @@ namespace VirusTotalNET.ResponseCodes
         NotPresent = 0,
 
         /// <summary>
-        /// The item was indeed present and it could be retrieved.
+        /// The item was present and it could be retrieved.
         /// </summary>
         Present = 1
     }

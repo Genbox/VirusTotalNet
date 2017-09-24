@@ -15,10 +15,10 @@ namespace VirusTotalNET.Results
         public string Country { get; set; }
 
         [JsonProperty("detected_communicating_samples")]
-        public List<Sample> DetectedCommunicatingSamples { get; set; }
+        public List<SampleWithDate> DetectedCommunicatingSamples { get; set; }
 
         [JsonProperty("detected_downloaded_samples")]
-        public List<Sample> DetectedDownloadedSamples { get; set; }
+        public List<SampleWithDate> DetectedDownloadedSamples { get; set; }
 
         [JsonProperty("detected_referrer_samples")]
         public List<Sample> DetectedReferrerSamples { get; set; }
@@ -26,16 +26,16 @@ namespace VirusTotalNET.Results
         [JsonProperty("detected_urls")]
         public List<DetectedUrl> DetectedUrls { get; set; }
 
-        public List<Resolution> Resolutions { get; set; }
+        public List<IPResolution> Resolutions { get; set; }
 
         [JsonProperty("undetected_communicating_samples")]
-        public List<Sample> UndetectedCommunicatingSamples { get; set; }
+        public List<SampleWithDate> UndetectedCommunicatingSamples { get; set; }
 
         [JsonProperty("undetected_downloaded_samples")]
-        public List<Sample> UndetectedDownloadedSamples { get; set; }
+        public List<SampleWithDate> UndetectedDownloadedSamples { get; set; }
 
         [JsonProperty("undetected_referrer_samples")]
-        public List<Sample> undetectedReferrerSamples { get; set; }
+        public List<Sample> UndetectedReferrerSamples { get; set; }
 
         /// <summary>
         /// The response code. Use this to determine the status of the report.
@@ -44,7 +44,7 @@ namespace VirusTotalNET.Results
         public IPReportResponseCode ResponseCode { get; set; }
 
         /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
+        /// Contains the message that corresponds to the response code.
         /// </summary>
         [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }

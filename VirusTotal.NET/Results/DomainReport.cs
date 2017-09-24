@@ -41,18 +41,15 @@ namespace VirusTotalNET.Results
         [JsonProperty("Dr.Web category")]
         public string DrWebCategory { get; set; }
 
+        [JsonProperty("Forcepoint ThreatSeeker category")]
+        public string ForcePointThreatSeekerCategory { get; set; }
+
         [JsonProperty("Opera domain info")]
         public string OperaDomainInfo { get; set; }
 
         public List<string> Pcaps { get; set; }
 
-        public List<Resolution> Resolutions { get; set; }
-
-        /// <summary>
-        /// The response code. Use this to determine the status of the report.
-        /// </summary>
-        [JsonProperty("response_code")]
-        public ReportResponseCode ResponseCode { get; set; }
+        public List<DomainResolution> Resolutions { get; set; }
 
         [JsonProperty("domain_siblings")]
         public List<string> DomainSiblings { get; set; }
@@ -72,12 +69,6 @@ namespace VirusTotalNET.Results
         [JsonProperty("undetected_referrer_samples")]
         public List<Sample> UndetectedReferrerSamples { get; set; }
 
-        /// <summary>
-        /// Contains the message that corrosponds to the reponse code.
-        /// </summary>
-        [JsonProperty("verbose_msg")]
-        public string VerboseMsg { get; set; }
-
         [JsonProperty("Websense ThreatSeeker category")]
         public string WebsenseThreatSeekerCategory { get; set; }
 
@@ -93,5 +84,14 @@ namespace VirusTotalNET.Results
 
         [JsonProperty("WOT domain info")]
         public WOTInfo WOTDomainInfo { get; set; }
+
+        [JsonProperty("response_code")]
+        public DomainResponseCode ResponseCode { get; set; }
+
+        /// <summary>
+        /// Contains the message that corresponds to the response code.
+        /// </summary>
+        [JsonProperty("verbose_msg")]
+        public string VerboseMsg { get; set; }
     }
 }

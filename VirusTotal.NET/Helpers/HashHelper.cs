@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace VirusTotalNET
+namespace VirusTotalNET.Helpers
 {
     public static class HashHelper
     {
@@ -15,7 +15,12 @@ namespace VirusTotalNET
 
         public static string GetSHA256(string content)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+            return GetSHA256(content, Encoding.UTF8);
+        }
+
+        public static string GetSHA256(string content, Encoding encoding)
+        {
+            using (MemoryStream ms = new MemoryStream(encoding.GetBytes(content)))
                 return GetSHA256(ms);
         }
 
@@ -31,7 +36,7 @@ namespace VirusTotalNET
         public static string GetSHA256(Stream stream)
         {
             if (stream == null || stream.Length == 0)
-                throw new ArgumentException("You must provide a valid stream.", "stream");
+                throw new ArgumentException("You must provide a valid stream.", nameof(stream));
 
             using (SHA256 sha256 = SHA256.Create())
             {
@@ -48,7 +53,12 @@ namespace VirusTotalNET
 
         public static string GetSHA1(string content)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+            return GetSHA1(content, Encoding.UTF8);
+        }
+
+        public static string GetSHA1(string content, Encoding encoding)
+        {
+            using (MemoryStream ms = new MemoryStream(encoding.GetBytes(content)))
                 return GetSHA1(ms);
         }
 
@@ -64,7 +74,7 @@ namespace VirusTotalNET
         public static string GetSHA1(Stream stream)
         {
             if (stream == null || stream.Length == 0)
-                throw new ArgumentException("You must provide a valid stream.", "stream");
+                throw new ArgumentException("You must provide a valid stream.", nameof(stream));
 
             using (SHA1 sha1 = SHA1.Create())
             {
@@ -81,7 +91,12 @@ namespace VirusTotalNET
 
         public static string GetMD5(string content)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+            return GetMD5(content, Encoding.UTF8);
+        }
+
+        public static string GetMD5(string content, Encoding encoding)
+        {
+            using (MemoryStream ms = new MemoryStream(encoding.GetBytes(content)))
                 return GetMD5(ms);
         }
 

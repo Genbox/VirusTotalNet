@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using VirusTotalNET.Exceptions;
 using VirusTotalNET.ResponseCodes;
@@ -14,66 +14,61 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task ScanKnownFile()
         {
-            //Create the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            FileInfo fileInfo = new FileInfo("EICAR.txt");
-            File.WriteAllText(fileInfo.FullName, @"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
-
-            ScanResult fileResult = await VirusTotal.ScanFile(fileInfo);
+            ScanResult fileResult = await VirusTotal.ScanFileAsync(TestData.EICARMalware, TestData.EICARFilename);
 
             //It should always be in the VirusTotal database.
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            Assert.Equal(ScanFileResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
-        public void ScanMultipleKnownFile()
+        public async Task ScanTestFile()
         {
-            //TODO
+            ScanResult fileResult = await VirusTotal.ScanFileAsync(TestData.TestFile, TestData.TestFileName);
+
+            //It should always be in the VirusTotal database.
+            Assert.Equal(ScanFileResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task ScanUnknownFile()
         {
-            string guid = "VirusTotal.NET" + Guid.NewGuid();
-
-            FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
-            File.WriteAllText(fileInfo.FullName, guid);
-
-            ScanResult fileResult = await VirusTotal.ScanFile(fileInfo);
+            ScanResult fileResult = await VirusTotal.ScanFileAsync(TestData.GetRandomFile(128, 1).First(), TestData.TestFileName);
 
             //It should never be in the VirusTotal database.
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
-        }
-
-        [Fact]
-        public void ScanMultipleUnknownFile()
-        {
-            //TODO
+            Assert.Equal(ScanFileResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task ScanSmallFile()
         {
-            ScanResult fileResult = await VirusTotal.ScanFile(new byte[1], "VirusTotal.NET-Test.txt");
-
-            //It has been scanned before, we expect it to return queued.
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            ScanResult fileResult = await VirusTotal.ScanFileAsync(new byte[1], TestData.TestFileName);
+            Assert.Equal(ScanFileResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task ScanLargeFile()
         {
-            //We expect it to throw a SizeLimitException because the file is above the legal limit
-            await Assert.ThrowsAsync<SizeLimitException>(async () => await VirusTotal.ScanFile(new byte[VirusTotal.FileSizeLimit + 1], "VirusTotal.NET-Test.txt"));
+            VirusTotal.Timeout = TimeSpan.FromSeconds(500);
+            ScanResult result = await VirusTotal.ScanFileAsync(new byte[VirusTotal.FileSizeLimit], TestData.TestFileName);
+
+            Assert.Equal(ScanFileResponseCode.Queued, result.ResponseCode);
         }
 
         [Fact]
-        public async Task ScanLargeFile2()
+        public async Task ScanLargeFileOverLimit()
         {
-            VirusTotal.Timeout = TimeSpan.FromSeconds(250);
-            ScanResult result = await VirusTotal.ScanFile(new byte[VirusTotal.FileSizeLimit], "VirusTotal.NET-Test.txt");
+            //We expect it to throw a SizeLimitException because the file is above the legal limit
+            await Assert.ThrowsAsync<SizeLimitException>(async () => await VirusTotal.ScanFileAsync(new byte[VirusTotal.FileSizeLimit + 1], TestData.TestFileName));
+        }
 
-            Assert.Equal(ScanResponseCode.Queued, result.ResponseCode);
-            Assert.False(string.IsNullOrWhiteSpace(result.ScanId));
+        [Fact]
+        public async Task ScanLargeFileOverLimitCheckDisabled()
+        {
+            VirusTotal.RestrictSizeLimits = false;
+            VirusTotal.Timeout = TimeSpan.FromSeconds(500);
+
+            //4KB over the limit should be enough. it is difficult to test since VT measures the limit on total request size.
+            await Assert.ThrowsAsync<SizeLimitException>(async () => await VirusTotal.ScanFileAsync(new byte[VirusTotal.FileSizeLimit + 1024 * 4], TestData.TestFileName));
         }
     }
 }

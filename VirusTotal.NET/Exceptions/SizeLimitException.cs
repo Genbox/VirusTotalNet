@@ -7,8 +7,13 @@ namespace VirusTotalNET.Exceptions
     /// </summary>
     public class SizeLimitException : Exception
     {
-        public SizeLimitException(string message)
-            : base(message)
+        public SizeLimitException(long vtLimitBytes, long actualBytes)
+            : base($"The file size limit on VirusTotal is {vtLimitBytes / 1024} KB. Your file is {actualBytes / 1024} KB")
+        {
+        }
+
+        public SizeLimitException(long vtLimitBytes)
+            : base($"The file size limit on VirusTotal is {vtLimitBytes / 1024} KB.")
         {
         }
     }

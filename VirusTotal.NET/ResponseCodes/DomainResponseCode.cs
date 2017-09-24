@@ -1,6 +1,6 @@
 namespace VirusTotalNET.ResponseCodes
 {
-    public enum IPReportResponseCode
+    public enum DomainResponseCode
     {
         /// <summary>
         /// The item you searched for was not present in VirusTotal's dataset.

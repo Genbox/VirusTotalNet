@@ -16,12 +16,6 @@ namespace VirusTotalNET.Results
         public string Resource { get; set; }
 
         /// <summary>
-        /// The scan response code. Use this to determine the status of the scan.
-        /// </summary>
-        [JsonProperty("response_code")]
-        public ScanResponseCode ResponseCode { get; set; }
-
-        /// <summary>
         /// The unique scan id of the resource.
         /// </summary>
         [JsonProperty("scan_id")]
@@ -31,5 +25,8 @@ namespace VirusTotalNET.Results
         /// SHA256 hash of the resource.
         /// </summary>
         public string SHA256 { get; set; }
+
+        [JsonProperty("response_code")]
+        public RescanResponseCode ResponseCode { get; set; }
     }
 }

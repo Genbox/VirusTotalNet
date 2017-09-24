@@ -1,5 +1,3 @@
-using System;
-
 namespace VirusTotalNET.Objects
 {
     public class Sample
@@ -7,6 +5,5 @@ namespace VirusTotalNET.Objects
         public int Positives { get; set; }
         public int Total { get; set; }
         public string Sha256 { get; set; }
-        public DateTime Date { get; set; }
     }
 }

@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using VirusTotalNET.Exceptions;
 using VirusTotalNET.ResponseCodes;
@@ -14,69 +14,89 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task GetReportForKnownFile()
         {
-            IgnoreMissingJson("scans.Ad-Aware / Detail", "scans.AegisLab / Detail", "scans.AhnLab-V3 / Detail", "scans.ALYac / Detail", "scans.Antiy-AVL / Detail", "scans.Arcabit / Detail", "scans.Avast / Detail", "scans.AVG / Detail", "scans.Avira / Detail", "scans.AVware / Detail", "scans.Baidu / Detail", "scans.BitDefender / Detail", "scans.Bkav / Detail", "scans.CAT-QuickHeal / Detail", "scans.ClamAV / Detail", "scans.CMC / Detail", "scans.Comodo / Detail", "scans.Cyren / Detail", "scans.DrWeb / Detail", "scans.Emsisoft / Detail", "scans.Endgame / Detail", "scans.ESET-NOD32 / Detail", "scans.Fortinet / Detail", "scans.F-Prot / Detail", "scans.F-Secure / Detail", "scans.GData / Detail", "scans.Ikarus / Detail", "scans.Jiangmin / Detail", "scans.K7AntiVirus / Detail", "scans.K7GW / Detail", "scans.Kaspersky / Detail", "scans.Kingsoft / Detail", "scans.Malwarebytes / Detail", "scans.McAfee / Detail", "scans.McAfee-GW-Edition / Detail", "scans.Microsoft / Detail", "scans.MicroWorld-eScan / Detail", "scans.NANO-Antivirus / Detail", "scans.nProtect / Detail", "scans.Panda / Detail", "scans.Qihoo-360 / Detail", "scans.Rising / Detail", "scans.Sophos / Detail", "scans.SUPERAntiSpyware / Detail", "scans.Symantec / Detail", "scans.SymantecMobileInsight / Detail", "scans.Tencent / Detail", "scans.TheHacker / Detail", "scans.TotalDefense / Detail", "scans.TrendMicro / Detail", "scans.TrendMicro-HouseCall / Detail", "scans.VBA32 / Detail", "scans.VIPRE / Detail", "scans.ViRobot / Detail", "scans.Webroot / Detail", "scans.WhiteArmor / Detail", "scans.Yandex / Detail", "scans.Zillya / Detail", "scans.ZoneAlarm / Detail", "scans.Zoner / Detail");
-
-            //Create a hash of the EICAR test virus. See http://www.eicar.org/86-0-Intended-use.html
-            string hash = HashHelper.GetMD5(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
-
-            FileReport fileReport = await VirusTotal.GetFileReport(hash);
+            FileReport fileReport = await VirusTotal.GetFileReportAsync(TestData.EICARMalware);
 
             //It should always be in the VirusTotal database.
-            Assert.Equal(ReportResponseCode.Present, fileReport.ResponseCode);
+            Assert.Equal(FileReportResponseCode.Present, fileReport.ResponseCode);
         }
 
         [Fact]
-        public void GetMultipleReportForKnownFile()
+        public async Task GetReportForInvalidFile()
         {
-            //TODO
+            //TODO: I can't seem to provoke an error response code by sending resources that are invalid.
+            //They just seem to either give code 0 (notpresent) or an empty JSON response
+        }
+
+        [Fact]
+        public async Task GetMultipleReportForKnownFiles()
+        {
+            IEnumerable<FileReport> results = await VirusTotal.GetFileReportsAsync(TestData.KnownHashes);
+
+            foreach (FileReport fileReport in results)
+            {
+                //It should always be in the VirusTotal database.
+                Assert.Equal(FileReportResponseCode.Present, fileReport.ResponseCode);
+            }
         }
 
         [Fact]
         public async Task GetReportForUnknownFile()
         {
+            //Reports for unknown files do not have these fields
             IgnoreMissingJson(" / MD5", " / Permalink", " / Positives", " / scan_date", " / scan_id", " / Scans", " / SHA1", " / SHA256", " / Total");
 
-            string guid = "VirusTotal.NET" + Guid.NewGuid();
-
-            FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
-            File.WriteAllText(fileInfo.FullName, guid);
-
-            FileReport fileReport = await VirusTotal.GetFileReport(fileInfo);
+            FileReport fileReport = await VirusTotal.GetFileReportAsync(TestData.GetRandomSHA1s(1).First());
 
             //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.Equal(ReportResponseCode.NotPresent, fileReport.ResponseCode);
+            Assert.Equal(FileReportResponseCode.NotPresent, fileReport.ResponseCode);
         }
 
         [Fact]
-        public void GetMultipleReportForUnknownFile()
+        public async Task GetMultipleReportForUnknownFiles()
         {
-            //TODO
+            //Reports for unknown files do not have these fields
+            IgnoreMissingJson("[array] / MD5", "[array] / Permalink", "[array] / Positives", "[array] / scan_date", "[array] / scan_id", "[array] / Scans", "[array] / SHA1", "[array] / SHA256", "[array] / Total");
+
+            IEnumerable<FileReport> results = await VirusTotal.GetFileReportsAsync(TestData.GetRandomSHA1s(3));
+
+            foreach (FileReport fileReport in results)
+            {
+                //It should never be in the VirusTotal database.
+                Assert.Equal(FileReportResponseCode.NotPresent, fileReport.ResponseCode);
+            }
         }
 
         [Fact]
         public async void GetReportForRecentFile()
         {
+            //We ignore these fields due to unknown file
             IgnoreMissingJson(" / MD5", " / Permalink", " / Positives", " / scan_date", " / Scans", " / SHA1", " / SHA256", " / Total");
 
-            //We create an unknown file
-            string guid = "VirusTotal.NET" + Guid.NewGuid();
+            ScanResult result = await VirusTotal.ScanFileAsync(TestData.GetRandomFile(128,1).First(), TestData.TestFileName);
 
-            FileInfo fileInfo = new FileInfo("VirusTotal.NET-Test.txt");
-            File.WriteAllText(fileInfo.FullName, guid);
-
-            //Attempt to submit it for scan
-            ScanResult result = await VirusTotal.ScanFile(fileInfo);
-
-            FileReport fileReport = await VirusTotal.GetFileReport(result.ScanId);
+            FileReport fileReport = await VirusTotal.GetFileReportAsync(result.ScanId);
 
             //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.Equal(ReportResponseCode.StillQueued, fileReport.ResponseCode);
+            Assert.Equal(FileReportResponseCode.Queued, fileReport.ResponseCode);
         }
 
         [Fact]
         public async void GetReportForInvalidResource()
         {
-            await Assert.ThrowsAsync<InvalidResourceException>(async () => await VirusTotal.GetFileReport("aaaaaaaaaaa"));
+            await Assert.ThrowsAsync<InvalidResourceException>(async () => await VirusTotal.GetFileReportAsync("aaaaaaaaaaa"));
+        }
+
+        [Fact]
+        public async Task FileReportBatchLimit()
+        {
+            IgnoreMissingJson("[array] / MD5", "[array] / Permalink", "[array] / Positives", "[array] / scan_date", "[array] / scan_id", "[array] / Scans", "[array] / SHA1", "[array] / SHA256", "[array] / Total");
+
+            VirusTotal.RestrictNumberOfResources = false;
+
+            IEnumerable<FileReport> results = await VirusTotal.GetFileReportsAsync(TestData.GetRandomSHA1s(10));
+
+            //We only expect 4 as VT simply returns 4 results no matter the batch size.
+            Assert.Equal(VirusTotal.FileReportBatchSizeLimit, results.Count());
         }
     }
 }

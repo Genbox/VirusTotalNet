@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
@@ -13,41 +13,48 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task ScanKnownUrl()
         {
-            UrlScanResult fileResult = await VirusTotal.ScanUrl("google.com");
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            UrlScanResult fileResult = await VirusTotal.ScanUrlAsync(TestData.KnownUrls.First());
+            Assert.Equal(UrlScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task ScanMultipleKnownUrls()
         {
-            string[] urls = { "google.se", "http://google.com", "https://virustotal.com" };
-
-            List<UrlScanResult> urlScans = await VirusTotal.ScanUrls(urls);
+            IEnumerable<UrlScanResult> urlScans = await VirusTotal.ScanUrlsAsync(TestData.KnownUrls);
 
             foreach (UrlScanResult urlScan in urlScans)
             {
-                Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
+                Assert.Equal(UrlScanResponseCode.Queued, urlScan.ResponseCode);
             }
         }
 
         [Fact]
         public async Task ScanUnknownUrl()
         {
-            UrlScanResult fileResult = await VirusTotal.ScanUrl("VirusTotal.NET" + Guid.NewGuid() + ".com");
-            Assert.Equal(ScanResponseCode.Queued, fileResult.ResponseCode);
+            UrlScanResult fileResult = await VirusTotal.ScanUrlAsync(TestData.GetUnknownUrls(1).First());
+            Assert.Equal(UrlScanResponseCode.Queued, fileResult.ResponseCode);
         }
 
         [Fact]
         public async Task ScanMultipleUnknownUrl()
         {
-            string[] urls = { "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com", "VirusTotal.NET" + Guid.NewGuid() + ".com" };
-
-            List<UrlScanResult> urlScans = await VirusTotal.ScanUrls(urls);
+            IEnumerable<UrlScanResult> urlScans = await VirusTotal.ScanUrlsAsync(TestData.GetUnknownUrls(5));
 
             foreach (UrlScanResult urlScan in urlScans)
             {
-                Assert.Equal(ScanResponseCode.Queued, urlScan.ResponseCode);
+                Assert.Equal(UrlScanResponseCode.Queued, urlScan.ResponseCode);
             }
+        }
+
+        [Fact]
+        public async Task UrlScanBatchLimit()
+        {
+            VirusTotal.RestrictNumberOfResources = false;
+
+            IEnumerable<UrlScanResult> results = await VirusTotal.ScanUrlsAsync(TestData.GetUnknownUrls(50));
+
+            //We only expect 25 as VT simply returns 25 results no matter the batch size.
+            Assert.Equal(VirusTotal.UrlScanBatchSizeLimit, results.Count());
         }
     }
 }
