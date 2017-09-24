@@ -30,6 +30,9 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task CreateDuplicateComment()
         {
+            //Create the comment. This might fail with an error, but it does not matter.
+            await VirusTotal.CreateCommentAsync(TestData.TestHash, "VirusTotal.NET test");
+
             CreateCommentResult comment = await VirusTotal.CreateCommentAsync(TestData.TestHash, "VirusTotal.NET test");
             Assert.Equal(CommentResponseCode.Error, comment.ResponseCode);
             Assert.Equal("Duplicate comment", comment.VerboseMsg);
