@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using VirusTotalNET.Exceptions;
 
 namespace VirusTotalNET.Helpers
@@ -46,76 +49,173 @@ namespace VirusTotalNET.Helpers
             return HashHelper.GetSHA256(stream);
         }
 
-        public static IEnumerable<string> GetResourceIdentifier(IEnumerable<Uri> uris)
-        {
-            foreach (Uri uri in uris)
-            {
-                yield return GetResourceIdentifier(uri);
-            }
-        }
-
-        public static string GetResourceIdentifier(Uri uri)
-        {
-            return HashHelper.GetSHA256(uri.ToString());
-        }
-
-        public static IEnumerable<string> GetResourceIdentifier(IEnumerable<string> urls)
-        {
-            foreach (string uri in urls)
-            {
-                yield return GetResourceIdentifier(uri);
-            }
-        }
-
         public static string GetResourceIdentifier(string url)
         {
-            return GetResourceIdentifier(UrlToUri(url));
+            if (!IsValidURL(url, out url))
+                throw new InvalidResourceException($"The url '{url}' is in the wrong format");
+
+            return HashHelper.GetSHA256(url);
         }
 
-        public static void ValidateResource(IEnumerable<string> resources, bool canBeUrl) //TODO
+        public static string GetResourceIdentifier(Uri url)
         {
-            foreach (string resource in resources)
+            return GetResourceIdentifier(url.ToString());
+        }
+
+        public static IEnumerable<string> ValidateResourcea(IEnumerable<string> resources, ResourceType type)
+        {
+            if (resources == null)
+                throw new InvalidResourceException("No resources given");
+
+            IEnumerable<string> array = resources as string[] ?? resources.ToArray();
+
+            if (!array.Any())
+                throw new InvalidResourceException("No resources given");
+
+            foreach (string resource in array)
             {
-                ValidateResource(resource, canBeUrl);
+                yield return ValidateResourcea(resource, type);
             }
         }
 
-        public static void ValidateResource(string resource, bool canBeUrl) //TODO
+        public static string ValidateResourcea(string resource, ResourceType type)
         {
             if (string.IsNullOrWhiteSpace(resource))
-                throw new ArgumentException("Resource must not be null or whitespace", nameof(resource));
+                throw new InvalidResourceException("Resource is invalid");
 
-            if (resource.Length != 32 && resource.Length != 40 && resource.Length != 64 && resource.Length != 75)
-                throw new InvalidResourceException("Resource " + resource + " has to be either a MD5, SHA1, SHA256 or scan id");
+            string sanitized = resource;
+            bool valid = false;
+
+            if (type.HasFlag(ResourceType.MD5)) valid |= IsValidMD5(resource);
+            if (type.HasFlag(ResourceType.SHA1)) valid |= IsValidSHA1(resource);
+            if (type.HasFlag(ResourceType.SHA256)) valid |= IsValidSHA256(resource);
+            if (type.HasFlag(ResourceType.ScanId)) valid |= IsValidScanId(resource);
+            if (type.HasFlag(ResourceType.URL)) valid |= IsValidURL(resource, out sanitized);
+            if (type.HasFlag(ResourceType.IP)) valid |= IsValidIP(resource, out sanitized);
+            if (type.HasFlag(ResourceType.Domain)) valid |= IsValidDomain(resource, out sanitized);
+
+            if (!valid)
+                throw new InvalidResourceException($"Resource '{resource}' has to be one of the following: {string.Join(", ", type.GetIndividualFlags())}");
+
+            return sanitized;
         }
 
-        public static IEnumerable<Uri> UrlToUri(IEnumerable<string> urls)
+        public static bool IsValidScanId(string resource)
         {
-            foreach (string url in urls)
-            {
-                Uri uri;
-                try
-                {
-                    uri = UrlToUri(url);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("There was an error converting " + url + " to an URI. See InnerException for details.", ex);
-                }
+            if (resource.Length != 75)
+                return false;
 
-                yield return uri;
-            }
+            string[] parts = resource.Split('-');
+
+            if (parts.Length != 2)
+                return false;
+
+            if (parts[0].Length != 64 || parts[1].Length != 10)
+                return false;
+
+            return IsAlphaNumeric(parts[0]) && IsNumeric(parts[1]);
         }
 
-        public static Uri UrlToUri(string url)
+        public static bool IsValidURL(string resource, out string sanitized)
+        {
+            sanitized = resource;
+
+            if (!resource.Contains('.'))
+                return false;
+
+            if (!Uri.TryCreate(NormalizeUrl(resource, false), UriKind.Absolute, out Uri uri))
+                return false;
+
+            sanitized = uri.ToString();
+            return true;
+        }
+
+        public static bool IsValidIP(string resource, out string sanitized)
+        {
+            sanitized = resource;
+
+            if (!IPAddress.TryParse(resource, out IPAddress ip))
+                return false;
+
+            if (ip.AddressFamily != AddressFamily.InterNetwork)
+                return false;
+
+            sanitized = ip.ToString();
+            return true;
+        }
+
+        public static bool IsValidDomain(string resource, out string sanitized)
+        {
+            sanitized = resource;
+
+            if (!resource.Contains('.'))
+                return false;
+
+            if (!Uri.TryCreate(NormalizeUrl(resource, false), UriKind.Absolute, out Uri uri))
+                return false;
+
+            sanitized = uri.Host;
+            return true;
+        }
+
+        public static bool IsValidMD5(string resource)
+        {
+            return resource.Length == 32 && IsAlphaNumeric(resource);
+        }
+
+        public static bool IsValidSHA1(string resource)
+        {
+            return resource.Length == 40 && IsAlphaNumeric(resource);
+        }
+
+        public static bool IsValidSHA256(string resource)
+        {
+            return resource.Length == 64 && IsAlphaNumeric(resource);
+        }
+
+        public static bool IsAlphaNumeric(string input)
+        {
+            return input.All(char.IsLetterOrDigit);
+        }
+
+        public static bool IsNumeric(string input)
+        {
+            return input.All(char.IsDigit);
+        }
+
+        public static string NormalizeUrl(string url, bool useTls)
         {
             string tempUri = url.Trim();
-            string lowered = tempUri.ToLower();
 
-            if (!lowered.StartsWith("http://") && !lowered.StartsWith("https://"))
-                tempUri = "http://" + tempUri;
+            if (tempUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || tempUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                return tempUri;
 
-            return new Uri(tempUri);
+            if (useTls)
+            {
+                if (!tempUri.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    tempUri = "https://" + tempUri;
+            }
+            else
+            {
+                if (!tempUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                    tempUri = "http://" + tempUri;
+            }
+
+            return tempUri;
         }
+    }
+
+    [Flags]
+    public enum ResourceType : long
+    {
+        MD5 = 1 << 0,
+        SHA1 = 1 << 1,
+        SHA256 = 1 << 2,
+        ScanId = 1 << 3,
+        URL = 1 << 4,
+        IP = 1 << 5,
+        Domain = 1 << 6,
+        AnyHash = MD5 | SHA1 | SHA256,
+        AnyType = AnyHash | ScanId | URL | IP | Domain
     }
 }

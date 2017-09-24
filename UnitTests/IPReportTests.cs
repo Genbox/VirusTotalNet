@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using VirusTotalNET.Exceptions;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
 using VirusTotalNET.UnitTests.TestInternals;
@@ -31,7 +32,7 @@ namespace VirusTotalNET.UnitTests
         public async Task GetIPReportRandomIPv6()
         {
             //IPv6 is not supported
-            await Assert.ThrowsAsync<ArgumentException>(async () => await VirusTotal.GetIPReportAsync(TestData.GetRandomIPv6s(1).First()));
+            await Assert.ThrowsAsync<InvalidResourceException>(async () => await VirusTotal.GetIPReportAsync(TestData.GetRandomIPv6s(1).First()));
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VirusTotalNET.Exceptions;
 using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
 using VirusTotalNET.UnitTests.TestInternals;
@@ -75,7 +76,7 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task GetReportInvalidUrl()
         {
-            await Assert.ThrowsAsync<UriFormatException>(async () => await VirusTotal.GetUrlReportAsync("."));
+            await Assert.ThrowsAsync<InvalidResourceException>(async () => await VirusTotal.GetUrlReportAsync("."));
         }
 
         [Fact]

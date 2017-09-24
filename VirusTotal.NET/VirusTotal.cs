@@ -279,10 +279,7 @@ namespace VirusTotalNET
         /// <param name="resource">A hash of the file. It can be an MD5, SHA1 or SHA256</param>
         public Task<RescanResult> RescanFileAsync(string resource)
         {
-            if (string.IsNullOrWhiteSpace(resource))
-                throw new ArgumentException("You have to supply a resource.", nameof(resource));
-
-            ResourcesHelper.ValidateResource(resource, false);
+            resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash);
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
@@ -332,15 +329,12 @@ namespace VirusTotalNET
         /// <param name="resourceList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.</param>
         public Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<string> resourceList)
         {
-            string[] resources = resourceList as string[] ?? resourceList.ToArray();
+            resourceList = ResourcesHelper.ValidateResourcea(resourceList, ResourceType.AnyHash);
 
-            if (!resources.Any())
-                throw new ArgumentException("You have to supply a resource.", nameof(resourceList));
+            string[] resources = resourceList as string[] ?? resourceList.ToArray();
 
             if (RestrictNumberOfResources && resources.Length > RescanBatchSizeLimit)
                 throw new ResourceLimitException($"Too many resources. There is a maximum of {RescanBatchSizeLimit} resources at the time.");
-
-            ResourcesHelper.ValidateResource(resources, false);
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
@@ -387,10 +381,7 @@ namespace VirusTotalNET
         /// <param name="resource">The resource (MD5, SHA1 or SHA256) you wish to get a report on.</param>
         public Task<FileReport> GetFileReportAsync(string resource)
         {
-            if (string.IsNullOrWhiteSpace(resource))
-                throw new ArgumentException("You have to supply a resource.", nameof(resource));
-
-            ResourcesHelper.ValidateResource(resource, false);
+            resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.ScanId);
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
@@ -438,15 +429,12 @@ namespace VirusTotalNET
         /// <param name="resourceList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
         public Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<string> resourceList)
         {
-            string[] resources = resourceList as string[] ?? resourceList.ToArray();
+            resourceList = ResourcesHelper.ValidateResourcea(resourceList, ResourceType.AnyHash | ResourceType.ScanId);
 
-            if (!resources.Any())
-                throw new ArgumentException("You have to supply a resource.", nameof(resourceList));
+            string[] resources = resourceList as string[] ?? resourceList.ToArray();
 
             if (RestrictNumberOfResources && resources.Length > FileReportBatchSizeLimit)
                 throw new ResourceLimitException($"Too many hashes. There is a maximum of {FileReportBatchSizeLimit} resources at the same time.");
-
-            ResourcesHelper.ValidateResource(resources, false);
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
@@ -463,7 +451,14 @@ namespace VirusTotalNET
         /// <param name="url">The URL to process.</param>
         public Task<UrlScanResult> ScanUrlAsync(string url)
         {
-            return ScanUrlAsync(ResourcesHelper.UrlToUri(url));
+            url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL);
+
+            //Required
+            IDictionary<string, string> values = new Dictionary<string, string>();
+            values.Add("url", url);
+
+            //https://www.virustotal.com/vtapi/v2/url/scan
+            return GetResult<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -473,25 +468,29 @@ namespace VirusTotalNET
         /// <param name="url">The URL to process.</param>
         public Task<UrlScanResult> ScanUrlAsync(Uri url)
         {
-            if (url == null)
-                throw new ArgumentNullException(nameof(url), "You have to supply an URL.");
-
-            //Required
-            IDictionary<string, string> values = new Dictionary<string, string>();
-            values.Add("url", url.ToString());
-
-            //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResult<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return ScanUrlAsync(url.ToString());
         }
 
         /// <summary>
         /// Scan the given URLs. The URLs will be downloaded by VirusTotal and processed.
         /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
         /// </summary>
-        /// <param name="urlList">The URLs to process.</param>
-        public Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<string> urlList)
+        /// <param name="urls">The URLs to process.</param>
+        public Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<string> urls)
         {
-            return ScanUrlsAsync(ResourcesHelper.UrlToUri(urlList));
+            urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL);
+
+            string[] urlCast = urls as string[] ?? urls.ToArray();
+
+            if (RestrictNumberOfResources && urlCast.Length > UrlScanBatchSizeLimit)
+                throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlScanBatchSizeLimit} URLs at the same time.");
+
+            //Required
+            IDictionary<string, string> values = new Dictionary<string, string>();
+            values.Add("url", string.Join(Environment.NewLine, urlCast));
+
+            //https://www.virustotal.com/vtapi/v2/url/scan
+            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -501,20 +500,7 @@ namespace VirusTotalNET
         /// <param name="urlList">The URLs to process.</param>
         public Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<Uri> urlList)
         {
-            Uri[] urls = urlList as Uri[] ?? urlList.ToArray();
-
-            if (!urls.Any())
-                throw new ArgumentException("You have to supply an URL.", nameof(urlList));
-
-            if (RestrictNumberOfResources && urls.Length > UrlScanBatchSizeLimit)
-                throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlScanBatchSizeLimit} URLs at the same time.");
-
-            //Required
-            IDictionary<string, string> values = new Dictionary<string, string>();
-            values.Add("url", string.Join(Environment.NewLine, urls.AsEnumerable()));
-
-            //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return ScanUrlsAsync(urlList.Select(x => x.ToString()));
         }
 
         /// <summary>
@@ -524,22 +510,11 @@ namespace VirusTotalNET
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
         public Task<UrlReport> GetUrlReportAsync(string url, bool scanIfNoReport = false)
         {
-            return GetUrlReportAsync(ResourcesHelper.UrlToUri(url), scanIfNoReport);
-        }
-
-        /// <summary>
-        /// Gets a scan report from an URL
-        /// </summary>
-        /// <param name="url">The URL you wish to get the report on.</param>
-        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
-        public Task<UrlReport> GetUrlReportAsync(Uri url, bool scanIfNoReport = false)
-        {
-            if (url == null)
-                throw new ArgumentNullException(nameof(url), "You have to supply an URL.");
+            url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL | ResourceType.ScanId);
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
-            values.Add("resource", url.ToString());
+            values.Add("resource", url);
 
             //Optional
             if (scanIfNoReport)
@@ -550,33 +525,32 @@ namespace VirusTotalNET
         }
 
         /// <summary>
-        /// Gets a scan report from a list of URLs
+        /// Gets a scan report from an URL
         /// </summary>
-        /// <param name="urlList">The URLs you wish to get the reports on.</param>
-        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
-        public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<string> urlList, bool scanIfNoReport = false)
+        /// <param name="url">The URL you wish to get the report on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
+        public Task<UrlReport> GetUrlReportAsync(Uri url, bool scanIfNoReport = false)
         {
-            return GetUrlReportsAsync(ResourcesHelper.UrlToUri(urlList), scanIfNoReport);
+            return GetUrlReportAsync(url.ToString(), scanIfNoReport);
         }
 
         /// <summary>
         /// Gets a scan report from a list of URLs
         /// </summary>
-        /// <param name="urlList">The URLs you wish to get the reports on.</param>
+        /// <param name="urls">The URLs you wish to get the reports on.</param>
         /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
-        public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
+        public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<string> urls, bool scanIfNoReport = false)
         {
-            Uri[] urls = urlList as Uri[] ?? urlList.ToArray();
+            urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL);
 
-            if (!urls.Any())
-                throw new ArgumentException("You have to supply an URL.", nameof(urlList));
+            string[] urlCast = urls as string[] ?? urls.ToArray();
 
-            if (RestrictNumberOfResources && urls.Length > UrlReportBatchSizeLimit)
+            if (RestrictNumberOfResources && urlCast.Length > UrlReportBatchSizeLimit)
                 throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlReportBatchSizeLimit} urls at the time.");
 
             //Required
             IDictionary<string, string> values = new Dictionary<string, string>();
-            values.Add("resource", string.Join(Environment.NewLine, urls.AsEnumerable()));
+            values.Add("resource", string.Join(Environment.NewLine, urlCast));
 
             //Optional
             if (scanIfNoReport)
@@ -587,12 +561,24 @@ namespace VirusTotalNET
         }
 
         /// <summary>
+        /// Gets a scan report from a list of URLs
+        /// </summary>
+        /// <param name="urlList">The URLs you wish to get the reports on.</param>
+        /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
+        public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
+        {
+            return GetUrlReportsAsync(urlList.Select(x => x.ToString()), scanIfNoReport);
+        }
+
+        /// <summary>
         /// Gets a scan report from an IP
         /// </summary>
         /// <param name="ip">The IP you wish to get the report on.</param>
         public Task<IPReport> GetIPReportAsync(string ip)
         {
-            return GetIPReportAsync(IPAddress.Parse(ip));
+            ip = ResourcesHelper.ValidateResourcea(ip, ResourceType.IP);
+
+            return GetResult<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -601,13 +587,7 @@ namespace VirusTotalNET
         /// <param name="ip">The IP you wish to get the report on.</param>
         public Task<IPReport> GetIPReportAsync(IPAddress ip)
         {
-            if (ip == null)
-                throw new ArgumentNullException(nameof(ip), "You have to supply an IP.");
-
-            if (ip.AddressFamily != AddressFamily.InterNetwork)
-                throw new ArgumentException("Only IPv4 addresses are supported", nameof(ip));
-
-            return GetResult<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
+            return GetIPReportAsync(ip.ToString());
         }
 
         /// <summary>
@@ -616,10 +596,10 @@ namespace VirusTotalNET
         /// <param name="domain">The domain you wish to get the report on.</param>
         public Task<DomainReport> GetDomainReportAsync(string domain)
         {
-            if (string.IsNullOrWhiteSpace(domain))
-                throw new ArgumentException("You have to supply a domain.", nameof(domain));
+            domain = ResourcesHelper.ValidateResourcea(domain, ResourceType.Domain);
 
-            return GetDomainReportAsync(ResourcesHelper.UrlToUri(domain));
+            //Hack because VT thought it was a good idea to have this API call as GET
+            return GetResult<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -628,8 +608,7 @@ namespace VirusTotalNET
         /// <param name="domain">The domain you wish to get the report on.</param>
         public Task<DomainReport> GetDomainReportAsync(Uri domain)
         {
-            //Hack because VT thought it was a good idea to have this API call as GET
-            return GetResult<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain.Host, HttpMethod.Get, null);
+            return GetDomainReportAsync(domain.Host);
         }
 
         /// <summary>
@@ -669,7 +648,7 @@ namespace VirusTotalNET
         /// <param name="before">TODO</param>
         public Task<CommentResult> GetCommentAsync(string resource, DateTime? before = null)
         {
-            ResourcesHelper.ValidateResource(resource, true);
+            resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.URL);
 
             //TODO: before
 
@@ -714,7 +693,7 @@ namespace VirusTotalNET
         /// <param name="comment">The comment you wish to add.</param>
         public Task<CreateCommentResult> CreateCommentAsync(string resource, string comment)
         {
-            ResourcesHelper.ValidateResource(resource, true);
+            resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.URL);
 
             if (string.IsNullOrWhiteSpace(comment))
                 throw new ArgumentException("Comment must not be null or whitespace", nameof(comment));
