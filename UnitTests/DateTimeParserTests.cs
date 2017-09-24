@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using VirusTotalNET.Objects;
 using VirusTotalNET.Results;
 using VirusTotalNET.UnitTests.TestInternals;
 using Xunit;
-using Json = Newtonsoft.Json.JsonConvert;
 
 namespace VirusTotalNET.UnitTests
 {
@@ -27,7 +27,7 @@ namespace VirusTotalNET.UnitTests
             fileReport.Scans.Add("Yandex", scan2);
             fileReport.Scans.Add("SentinelOne", scan3);
 
-            string fileReportJson = Json.SerializeObject(fileReport.Scans);
+            string fileReportJson = JsonConvert.SerializeObject(fileReport.Scans);
             Assert.Contains("\"Update\":\"20170726\"", fileReportJson);
             Assert.Contains("\"Update\":\"20170725\"", fileReportJson);
             Assert.Contains("\"Update\":\"20170718\"", fileReportJson);
