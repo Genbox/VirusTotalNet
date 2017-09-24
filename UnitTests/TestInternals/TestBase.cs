@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -37,6 +39,10 @@ namespace VirusTotalNET.UnitTests.TestInternals
             {
                 LastCallInJSON = Encoding.UTF8.GetString(bytes);
             };
+
+            //Hack to only make 4 requests pr. sec. with public API key
+            if (!Debugger.IsAttached)
+                Thread.Sleep(15000);
         }
 
         protected VirusTotal VirusTotal { get; }
