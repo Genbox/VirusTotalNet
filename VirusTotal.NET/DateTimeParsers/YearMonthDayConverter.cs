@@ -9,11 +9,11 @@ namespace VirusTotalNET.DateTimeParsers
     public class YearMonthDayConverter : DateTimeConverterBase
     {
         private readonly CultureInfo _culture = new CultureInfo("en-us");
-        private const string DateFormatString = "yyyyMMdd";
+        private const string _dateFormatString = "yyyyMMdd";
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.DateFormatString = DateFormatString;
+            writer.DateFormatString = _dateFormatString;
             writer.WriteValue(value);
         }
 
@@ -23,15 +23,14 @@ namespace VirusTotalNET.DateTimeParsers
                 return DateTime.MinValue;
 
             if (!(reader.Value is string))
-                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+                throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + reader.Value);
 
             string value = (string)reader.Value;
 
-            DateTime result;
-            if (DateTime.TryParseExact(value, DateFormatString, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
+            if (DateTime.TryParseExact(value, _dateFormatString, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
                 return result;
 
-            throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + value);
+            throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + value);
         }
     }
 }
