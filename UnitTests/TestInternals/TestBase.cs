@@ -34,11 +34,8 @@ namespace VirusTotalNET.UnitTests.TestInternals
             VirusTotal = new VirusTotal("YOUR API KEY HERE", settings);
             VirusTotal.UserAgent = "VirusTotal.NET unit tests";
             VirusTotal.UseTLS = false;
-            
-            VirusTotal.OnRawResponseReceived += bytes =>
-            {
-                LastCallInJSON = Encoding.UTF8.GetString(bytes);
-            };
+
+            VirusTotal.OnRawResponseReceived += bytes => { LastCallInJSON = Encoding.UTF8.GetString(bytes); };
 
             //Hack to only make 4 requests pr. sec. with public API key
             if (!Debugger.IsAttached)

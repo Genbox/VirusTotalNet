@@ -38,12 +38,13 @@ namespace VirusTotalNET.Helpers
         private static IEnumerable<Enum> GetFlagValues(Type enumType)
         {
             ulong flag = 0x1;
-            foreach (var value in Enum.GetValues(enumType).Cast<Enum>())
+            foreach (Enum value in Enum.GetValues(enumType).Cast<Enum>())
             {
                 ulong bits = Convert.ToUInt64(value);
                 if (bits == 0L)
                     continue; // skip the zero value
-                while (flag < bits) flag <<= 1;
+                while (flag < bits)
+                    flag <<= 1;
                 if (flag == bits)
                     yield return value;
             }

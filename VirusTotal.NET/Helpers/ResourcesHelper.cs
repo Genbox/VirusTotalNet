@@ -86,13 +86,20 @@ namespace VirusTotalNET.Helpers
             string sanitized = resource;
             bool valid = false;
 
-            if (type.HasFlag(ResourceType.MD5)) valid |= IsValidMD5(resource);
-            if (type.HasFlag(ResourceType.SHA1)) valid |= IsValidSHA1(resource);
-            if (type.HasFlag(ResourceType.SHA256)) valid |= IsValidSHA256(resource);
-            if (type.HasFlag(ResourceType.ScanId)) valid |= IsValidScanId(resource);
-            if (type.HasFlag(ResourceType.URL)) valid |= IsValidURL(resource, out sanitized);
-            if (type.HasFlag(ResourceType.IP)) valid |= IsValidIP(resource, out sanitized);
-            if (type.HasFlag(ResourceType.Domain)) valid |= IsValidDomain(resource, out sanitized);
+            if (type.HasFlag(ResourceType.MD5))
+                valid |= IsValidMD5(resource);
+            if (type.HasFlag(ResourceType.SHA1))
+                valid |= IsValidSHA1(resource);
+            if (type.HasFlag(ResourceType.SHA256))
+                valid |= IsValidSHA256(resource);
+            if (type.HasFlag(ResourceType.ScanId))
+                valid |= IsValidScanId(resource);
+            if (type.HasFlag(ResourceType.URL))
+                valid |= IsValidURL(resource, out sanitized);
+            if (type.HasFlag(ResourceType.IP))
+                valid |= IsValidIP(resource, out sanitized);
+            if (type.HasFlag(ResourceType.Domain))
+                valid |= IsValidDomain(resource, out sanitized);
 
             if (!valid)
                 throw new InvalidResourceException($"Resource '{resource}' has to be one of the following: {string.Join(", ", type.GetIndividualFlags())}");

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using VirusTotalNET.Objects;
@@ -9,11 +8,11 @@ using VirusTotalNET.Results;
 
 namespace VirusTotalNET.Client
 {
-    class Program
+    internal class Program
     {
         private const string ScanUrl = "http://www.google.com/";
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             RunExample().Wait();
 

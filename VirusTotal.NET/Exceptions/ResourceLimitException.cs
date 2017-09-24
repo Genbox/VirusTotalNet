@@ -8,8 +8,6 @@ namespace VirusTotalNET.Exceptions
     public class ResourceLimitException : Exception
     {
         public ResourceLimitException(string message)
-            : base(message)
-        {
-        }
+            : base(message) { }
     }
 }

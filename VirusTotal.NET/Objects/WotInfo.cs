@@ -13,6 +13,5 @@ namespace VirusTotalNET.Objects
 
         [JsonProperty("Vendor reliability")]
         public string VendorReliability { get; set; }
-
     }
 }

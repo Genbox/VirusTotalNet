@@ -11,11 +11,11 @@ namespace VirusTotalNET.UnitTests.TestInternals
     {
         private static readonly Random _random = new Random();
 
-
         internal static readonly string[] KnownDomains = { "google.com", "facebook.com", "virustotal.com" };
 
         internal static readonly string[] KnownUrls = { "http://google.se", "http://google.com", "https://virustotal.com" };
         internal static readonly string[] KnownIPv4s = { "8.8.8.8", "8.8.4.4", "216.58.211.142" }; //Google DNS and Google.com
+
         internal static readonly string[] KnownHashes =
         {
             "bf531b602b823473f09c7102b3baabd1848bef03", //conficker
@@ -31,6 +31,7 @@ namespace VirusTotalNET.UnitTests.TestInternals
         /// EICAR test virus. See http://www.EICARMalware.org/86-0-Intended-use.html
         /// </summary>
         internal const string EICARFilename = "EICAR.txt";
+
         internal static readonly byte[] EICARMalware = Encoding.ASCII.GetBytes(@"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*");
 
         internal static IEnumerable<string> GetUnknownDomains(int count)
@@ -46,7 +47,6 @@ namespace VirusTotalNET.UnitTests.TestInternals
             foreach (string unknownDomain in GetUnknownDomains(count))
             {
                 yield return "http://" + unknownDomain;
-
             }
         }
 

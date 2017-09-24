@@ -44,6 +44,5 @@ namespace VirusTotalNET.Results
         /// </summary>
         [JsonProperty("verbose_msg")]
         public string VerboseMsg { get; set; }
-
     }
 }
