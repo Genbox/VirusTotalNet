@@ -9,7 +9,7 @@ namespace VirusTotalNET.DateTimeParsers
     {
         private static DateTime _epoc = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
-        private static DateTime FromUnix(double unixTime)
+        private static DateTime FromUnix(long unixTime)
         {
             return _epoc.AddSeconds(unixTime).ToLocalTime();
         }
@@ -24,14 +24,14 @@ namespace VirusTotalNET.DateTimeParsers
             if (reader.Value == null)
                 return 0;
 
-            double value;
+            long value;
             try
             {
-                value = (double)reader.Value;
+                value = (long)reader.Value;
             }
             catch (InvalidCastException)
             {
-                throw new InvalidDateTimeException("Invalid datetime from VirusTotal. Tried to parse: " + reader.Value);
+                throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + reader.Value);
             }
 
             return FromUnix(value);
