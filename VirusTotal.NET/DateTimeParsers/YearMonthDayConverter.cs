@@ -27,6 +27,10 @@ namespace VirusTotalNET.DateTimeParsers
 
             string value = (string)reader.Value;
 
+            //VT sometimes have really old data that return '-' in timestamps
+            if (value.Equals("-", StringComparison.OrdinalIgnoreCase))
+                return DateTime.MinValue;
+
             if (DateTime.TryParseExact(value, _dateFormatString, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
                 return result;
 
