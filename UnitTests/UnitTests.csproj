@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Version.targets" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>VirusTotalNET.UnitTests</RootNamespace>
     <Packable>false</Packable>
-    <Version>1.6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
