@@ -26,8 +26,11 @@ namespace VirusTotalNET
         /// <param name="apiKey">The API key you got from Virus Total</param>
         public VirusTotal(string apiKey)
         {
-            if (string.IsNullOrWhiteSpace(apiKey) || apiKey.Length < 64)
+            if (string.IsNullOrWhiteSpace(apiKey))
                 throw new ArgumentException("You have to set an API key.", nameof(apiKey));
+
+            if (apiKey.Length < 64)
+                throw new ArgumentException("API key is too short.", nameof(apiKey));
 
             _defaultValues = new Dictionary<string, string>(1);
             _defaultValues.Add("apikey", apiKey);
