@@ -3,9 +3,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>VirusTotal.NET Client</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>VirusTotal.NET Client</PackageId>
+    <LangVersion>7.1</LangVersion>
+    <Packable>false</Packable>
+    <AssemblyName>VirusTotal.NET Client</AssemblyName>
     <RootNamespace>VirusTotalNET.Client</RootNamespace>
   </PropertyGroup>
 
