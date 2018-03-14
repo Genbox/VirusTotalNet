@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace VirusTotalNET.Helpers
 {
-    public static class EnumHelper
+    internal static class EnumHelper
     {
         public static IEnumerable<Enum> GetIndividualFlags(this Enum value)
         {

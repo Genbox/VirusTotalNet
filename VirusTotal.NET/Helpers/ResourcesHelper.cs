@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using VirusTotalNET.Enums;
 using VirusTotalNET.Exceptions;
 
 namespace VirusTotalNET.Helpers
@@ -187,7 +188,7 @@ namespace VirusTotalNET.Helpers
 
         public static bool IsNumeric(string input)
         {
-            return input.All(char.IsDigit);
+            return input.All(x => x >= 48 && x <= 57);
         }
 
         public static string NormalizeUrl(string url, bool useTls)
@@ -210,19 +211,5 @@ namespace VirusTotalNET.Helpers
 
             return tempUri;
         }
-    }
-
-    [Flags]
-    public enum ResourceType : long
-    {
-        MD5 = 1 << 0,
-        SHA1 = 1 << 1,
-        SHA256 = 1 << 2,
-        ScanId = 1 << 3,
-        URL = 1 << 4,
-        IP = 1 << 5,
-        Domain = 1 << 6,
-        AnyHash = MD5 | SHA1 | SHA256,
-        AnyType = AnyHash | ScanId | URL | IP | Domain
     }
 }

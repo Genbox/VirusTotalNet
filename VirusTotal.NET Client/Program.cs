@@ -12,9 +12,9 @@ namespace VirusTotalNET.Client
     {
         private const string ScanUrl = "http://www.google.com/";
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            RunExample().Wait();
+            await RunExample();
 
             Console.WriteLine("Press a key to continue");
             Console.ReadLine();

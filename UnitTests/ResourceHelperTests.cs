@@ -1,4 +1,5 @@
-﻿using VirusTotalNET.Exceptions;
+﻿using VirusTotalNET.Enums;
+using VirusTotalNET.Exceptions;
 using VirusTotalNET.Helpers;
 using VirusTotalNET.UnitTests.TestInternals;
 using Xunit;

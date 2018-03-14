@@ -13,6 +13,8 @@ namespace VirusTotalNET.UnitTests
         [Fact]
         public async Task GetIPReportKnownIPv4()
         {
+            IgnoreMissingJson("detected_referrer_samples[array] / Date");
+
             IPReport report = await VirusTotal.GetIPReportAsync(TestData.KnownIPv4s.First());
             Assert.Equal(IPReportResponseCode.Present, report.ResponseCode);
         }

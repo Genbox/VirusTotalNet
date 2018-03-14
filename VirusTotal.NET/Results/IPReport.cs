@@ -21,7 +21,7 @@ namespace VirusTotalNET.Results
         public List<SampleWithDate> DetectedDownloadedSamples { get; set; }
 
         [JsonProperty("detected_referrer_samples")]
-        public List<Sample> DetectedReferrerSamples { get; set; }
+        public List<SampleWithDate> DetectedReferrerSamples { get; set; }
 
         [JsonProperty("detected_urls")]
         public List<DetectedUrl> DetectedUrls { get; set; }
@@ -36,6 +36,9 @@ namespace VirusTotalNET.Results
 
         [JsonProperty("undetected_referrer_samples")]
         public List<Sample> UndetectedReferrerSamples { get; set; }
+
+        [JsonProperty("undetected_urls")]
+        public List<List<string>> UndetectedUrls { get; set; }
 
         /// <summary>
         /// The response code. Use this to determine the status of the report.
