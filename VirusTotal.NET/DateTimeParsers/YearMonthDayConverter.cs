@@ -3,6 +3,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using VirusTotalNET.Exceptions;
+using VirusTotalNET.Helpers;
 
 namespace VirusTotalNET.DateTimeParsers
 {
@@ -23,24 +24,21 @@ namespace VirusTotalNET.DateTimeParsers
             if (reader.Value == null)
                 return DateTime.MinValue;
 
-            if (!(reader.Value is string))
+            if (!(reader.Value is string stringVal))
                 throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + reader.Value);
 
-            string value = (string)reader.Value;
-
-            //VT sometimes have really old data that return '-' in timestamps
-            if (value.Equals("-", StringComparison.OrdinalIgnoreCase))
+            if (!ResourcesHelper.IsNumeric(stringVal))
                 return DateTime.MinValue;
 
             //New format
-            if (DateTime.TryParseExact(value, _newDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
+            if (DateTime.TryParseExact(stringVal, _newDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
                 return result;
 
             //Old format
-            if (DateTime.TryParseExact(value, _oldDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
+            if (DateTime.TryParseExact(stringVal, _oldDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
                 return result;
 
-            throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + value);
+            throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + stringVal);
         }
     }
 }
