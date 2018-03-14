@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <LangVersion>7.1</LangVersion>
     <Packable>false</Packable>
-    <AssemblyName>VirusTotal.NET Client</AssemblyName>
+    <AssemblyName>VirusTotalNET.Client</AssemblyName>
     <RootNamespace>VirusTotalNET.Client</RootNamespace>
   </PropertyGroup>
 
