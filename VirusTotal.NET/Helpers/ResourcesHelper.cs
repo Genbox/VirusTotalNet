@@ -188,7 +188,7 @@ namespace VirusTotalNET.Helpers
 
         public static bool IsNumeric(string input)
         {
-            return input.All(x => x >= 48 && x <= 57);
+            return input != string.Empty && input.All(x => x >= 48 && x <= 57);
         }
 
         public static string NormalizeUrl(string url, bool useTls)
