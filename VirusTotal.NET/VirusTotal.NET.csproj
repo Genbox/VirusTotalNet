@@ -2,7 +2,7 @@
   <Import Project="..\Version.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>VirusTotal.NET</AssemblyName>
     <PackageId>VirusTotal.NET</PackageId>
     <PackageProjectUrl>https://github.com/Genbox/VirusTotal.NET/</PackageProjectUrl>
