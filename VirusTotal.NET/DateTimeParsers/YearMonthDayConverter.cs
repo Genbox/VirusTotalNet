@@ -24,6 +24,9 @@ namespace VirusTotalNET.DateTimeParsers
             if (reader.Value == null)
                 return DateTime.MinValue;
 
+            if (string.IsNullOrEmpty(reader.Value as string ))
+                return DateTime.MinValue;
+                
             if (!(reader.Value is string stringVal))
                 throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + reader.Value);
 
