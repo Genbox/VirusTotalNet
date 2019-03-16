@@ -23,7 +23,7 @@ namespace VirusTotalNET.UnitTests
         public async Task GetIPReportUnknownIPv4()
         {
             //Unknown hosts do not have all this in the response
-            IgnoreMissingJson(" / as_owner", " / ASN", " / Country", " / detected_communicating_samples", " / detected_downloaded_samples", " / detected_referrer_samples", " / detected_urls", " / Resolutions", " / undetected_communicating_samples", " / undetected_downloaded_samples", " / undetected_referrer_samples");
+            IgnoreMissingJson(" / undetected_urls", " / as_owner", " / ASN", " / Country", " / detected_communicating_samples", " / detected_downloaded_samples", " / detected_referrer_samples", " / detected_urls", " / Resolutions", " / undetected_communicating_samples", " / undetected_downloaded_samples", " / undetected_referrer_samples");
 
             IPReport report = await VirusTotal.GetIPReportAsync("128.168.238.14");
             Assert.Equal(IPReportResponseCode.NotPresent, report.ResponseCode);
