@@ -10,6 +10,7 @@
 * Batch support for APIs that support it
 * Size and resource limits built in for better performance
 * Configurable limits to accommodate VT private API features
+* See https://developers.virustotal.com/v2.0/reference for the VT API documentation
 
 ### Examples
 
