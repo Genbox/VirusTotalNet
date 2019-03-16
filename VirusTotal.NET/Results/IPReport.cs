@@ -13,6 +13,8 @@ namespace VirusTotalNET.Results
         public int ASN { get; set; }
 
         public string Country { get; set; }
+        public string Continent { get; set; }
+        public string Network { get; set; }
 
         [JsonProperty("detected_communicating_samples")]
         public List<SampleWithDate> DetectedCommunicatingSamples { get; set; }
