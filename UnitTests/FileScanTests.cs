@@ -62,6 +62,22 @@ namespace VirusTotalNET.UnitTests
         }
 
         [Fact]
+        public async Task ScanVeryLargeFile()
+        {
+            VirusTotal.Timeout = TimeSpan.FromSeconds(500);
+            ScanResult result = await VirusTotal.ScanLargeFileAsync(new byte[VirusTotal.LargeFileSizeLimit], TestData.TestFileName);
+
+            Assert.Equal(ScanFileResponseCode.Queued, result.ResponseCode);
+        }
+
+        [Fact]
+        public async Task ScanVeryLargeFileOverLimit()
+        {
+            //We expect it to throw a SizeLimitException because the file is above the legal limit
+            await Assert.ThrowsAsync<SizeLimitException>(async () => await VirusTotal.ScanFileAsync(new byte[VirusTotal.LargeFileSizeLimit + 1], TestData.TestFileName));
+        }
+
+        [Fact]
         public async Task ScanLargeFileOverLimitCheckDisabled()
         {
             VirusTotal.RestrictSizeLimits = false;

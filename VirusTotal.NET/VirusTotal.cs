@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using VirusTotalNET.Enums;
 using VirusTotalNET.Exceptions;
 using VirusTotalNET.Helpers;
+using VirusTotalNET.Objects.Internal;
 using VirusTotalNET.Results;
 
 namespace VirusTotalNET
@@ -19,10 +20,10 @@ namespace VirusTotalNET
     public class VirusTotal
     {
         private readonly HttpClient _client;
-        private bool _useTls;
         private readonly HttpClientHandler _httpClientHandler;
         private readonly Dictionary<string, string> _defaultValues;
         private readonly JsonSerializer _serializer;
+        private readonly string _apiUrl = "www.virustotal.com/vtapi/v2/";
 
         /// <param name="apiKey">The API key you got from Virus Total</param>
         public VirusTotal(string apiKey)
@@ -37,14 +38,15 @@ namespace VirusTotalNET
             _defaultValues.Add("apikey", apiKey);
 
             _httpClientHandler = new HttpClientHandler();
-            _httpClientHandler.AllowAutoRedirect = false;
+            _httpClientHandler.AllowAutoRedirect = true;
 
-            _serializer = JsonSerializer.Create();
-            _serializer.NullValueHandling = NullValueHandling.Ignore;
+            JsonSerializerSettings jsonSettings = new JsonSerializerSettings();
+            jsonSettings.NullValueHandling = NullValueHandling.Ignore;
+            jsonSettings.Formatting = Formatting.None;
+
+            _serializer = JsonSerializer.Create(jsonSettings);
 
             _client = new HttpClient(_httpClientHandler);
-
-            ApiUrl = "www.virustotal.com/vtapi/v2/";
 
             RestrictSizeLimits = true;
             RestrictNumberOfResources = true;
@@ -83,7 +85,12 @@ namespace VirusTotalNET
         /// <summary>
         /// The maximum size (in bytes) that the Virus Total public API 2.0 supports for file uploads.
         /// </summary>
-        public long FileSizeLimit { get; set; } = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total as it measures file size limit on the TOTAL request size, and not just the file content.
+        public int FileSizeLimit { get; set; } = 33553369; //32 MB - 1063 = 33553369 it is the effective limit by virus total as it measures file size limit on the TOTAL request size, and not just the file content.
+
+        /// <summary>
+        /// The maximum size when using the large file API functionality (part of private API)
+        /// </summary>
+        public long LargeFileSizeLimit { get; set; } = 1024 * 1024 * 200; //200 MB
 
         /// <summary>
         /// The maximum size (in bytes) of comments.
@@ -113,26 +120,7 @@ namespace VirusTotalNET
         /// <summary>
         /// Set to false to use HTTP instead of HTTPS. HTTPS is used by default.
         /// </summary>
-        public bool UseTLS
-        {
-            get => _useTls;
-            set
-            {
-                _useTls = value;
-
-                string oldUrl = ApiUrl;
-
-                if (string.IsNullOrWhiteSpace(oldUrl))
-                    return;
-
-                if (oldUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    oldUrl = oldUrl.Substring(8);
-                else if (oldUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                    oldUrl = oldUrl.Substring(7);
-
-                _client.BaseAddress = _useTls ? new Uri("https://" + oldUrl) : new Uri("http://" + oldUrl);
-            }
-        }
+        public bool UseTLS { get; set; } = true;
 
         /// <summary>
         /// The user-agent to use when doing queries
@@ -149,7 +137,11 @@ namespace VirusTotalNET
         public IWebProxy Proxy
         {
             get => _httpClientHandler.Proxy;
-            set => _httpClientHandler.Proxy = value;
+            set
+            {
+                _httpClientHandler.UseProxy = value != null;
+                _httpClientHandler.Proxy = value;
+            }
         }
 
         /// <summary>
@@ -162,33 +154,19 @@ namespace VirusTotalNET
         }
 
         /// <summary>
-        /// The URL which the Virus Total service listens on. If you don't set the scheme to http:// or https:// it will default to https://
+        /// Scan a file.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
         /// </summary>
-        public string ApiUrl
+        /// <param name="filePath">The file to scan</param>
+        public async Task ScanFileAsync(string filePath)
         {
-            get => _client.BaseAddress.ToString();
-            set
-            {
-                string newUrl = value.Trim();
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("The file was not found.", filePath);
 
-                if (string.IsNullOrWhiteSpace(newUrl))
-                    return;
+            string filename = Path.GetFileName(filePath);
 
-                if (newUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                {
-                    _useTls = true;
-                    newUrl = newUrl.Substring(8);
-                }
-                else if (newUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                {
-                    _useTls = false;
-                    newUrl = newUrl.Substring(7);
-                }
-                else
-                    _useTls = true;
-
-                _client.BaseAddress = _useTls ? new Uri("https://" + newUrl) : new Uri("http://" + newUrl);
-            }
+            using (Stream fs = File.OpenRead(filePath))
+                await ScanFileAsync(fs, filename);
         }
 
         /// <summary>
@@ -196,12 +174,13 @@ namespace VirusTotalNET
         /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
         /// </summary>
         /// <param name="file">The file to scan</param>
-        public Task<ScanResult> ScanFileAsync(FileInfo file)
+        public async Task<ScanResult> ScanFileAsync(FileInfo file)
         {
             if (!file.Exists)
                 throw new FileNotFoundException("The file was not found.", file.Name);
 
-            return ScanFileAsync(file.OpenRead(), file.Name);
+            using (Stream fs = file.OpenRead())
+                return await ScanFileAsync(fs, file.Name).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -211,9 +190,10 @@ namespace VirusTotalNET
         /// </summary>
         /// <param name="file">The file to scan</param>
         /// <param name="filename">The filename of the file</param>
-        public Task<ScanResult> ScanFileAsync(byte[] file, string filename)
+        public async Task<ScanResult> ScanFileAsync(byte[] file, string filename)
         {
-            return ScanFileAsync(new MemoryStream(file), filename);
+            using (MemoryStream ms = new MemoryStream(file))
+                return await ScanFileAsync(ms, filename).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -225,24 +205,98 @@ namespace VirusTotalNET
         /// <param name="filename">The filename of the file</param>
         public Task<ScanResult> ScanFileAsync(Stream stream, string filename)
         {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream), "You must provide a stream that is not null");
-
-            if (stream.Length <= 0)
-                throw new ArgumentException("You must provide a stream with content", nameof(stream));
-
-            if (RestrictSizeLimits && stream.Length > FileSizeLimit)
-                throw new SizeLimitException(FileSizeLimit, stream.Length);
-
-            if (string.IsNullOrWhiteSpace(filename))
-                throw new ArgumentException("You must provide a filename. Preferably the original filename.");
+            ValidateScanFileArguments(stream, FileSizeLimit, filename);
 
             MultipartFormDataContent multi = new MultipartFormDataContent();
             multi.Add(CreateApiPart());
             multi.Add(CreateFileContent(stream, filename));
 
             //https://www.virustotal.com/vtapi/v2/file/scan
-            return GetResult<ScanResult>("file/scan", HttpMethod.Post, multi);
+            return GetResponse<ScanResult>("file/scan", HttpMethod.Post, multi);
+        }
+
+        /// <summary>
+        /// Scan a large file. The difference between <see cref="ScanFileAsync(FileInfo)"/> and this method, is that this method sends 2 requests, and it is part of the private VT API, so you need an API key with large file upload support.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// </summary>
+        /// <param name="filePath">The file to scan</param>
+        public async Task<ScanResult> ScanLargeFileAsync(string filePath)
+        {
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("The file was not found.", filePath);
+
+            string filename = Path.GetFileName(filePath);
+
+            using (Stream fs = File.OpenRead(filePath))
+                return await ScanLargeFileAsync(fs, filename);
+        }
+
+        /// <summary>
+        /// Scan a large file. The difference between <see cref="ScanFileAsync(FileInfo)"/> and this method, is that this method sends 2 requests, and it is part of the private VT API, so you need an API key with large file upload support.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// </summary>
+        /// <param name="file">The file to scan</param>
+        public async Task<ScanResult> ScanLargeFileAsync(FileInfo file)
+        {
+            if (!file.Exists)
+                throw new FileNotFoundException("The file was not found.", file.Name);
+
+            using (Stream fs = file.OpenRead())
+                return await ScanLargeFileAsync(fs, file.Name);
+        }
+
+        /// <summary>
+        /// Scan a large file. The difference between <see cref="ScanFileAsync(FileInfo)"/> and this method, is that this method sends 2 requests, and it is part of the private VT API, so you need an API key with large file upload support.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Note: You are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="file">The file to scan</param>
+        /// <param name="filename">The filename of the file</param>
+        public async Task<ScanResult> ScanLargeFileAsync(byte[] file, string filename)
+        {
+            using (MemoryStream ms = new MemoryStream(file))
+                return await ScanLargeFileAsync(ms, filename);
+        }
+
+        /// <summary>
+        /// Scan a large file. The difference between <see cref="ScanFileAsync(FileInfo)"/> and this method, is that this method sends 2 requests, and it is part of the private VT API, so you need an API key with large file upload support.
+        /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
+        /// Note: You are also strongly encouraged to provide the filename as it is rich metadata for the Virus Total database.
+        /// </summary>
+        /// <param name="stream">The file to scan</param>
+        /// <param name="filename">The filename of the file</param>
+        public async Task<ScanResult> ScanLargeFileAsync(Stream stream, string filename)
+        {
+            ValidateScanFileArguments(stream, LargeFileSizeLimit, filename);
+
+            if (stream.Length <= FileSizeLimit)
+                throw new ArgumentException($"Please use the ScanFileAsync() method for files smaller than {FileSizeLimit} bytes");
+
+            //https://www.virustotal.com/vtapi/v2/file/scan/upload_url
+            LargeFileUpload uploadUrlObj = await GetResponse<LargeFileUpload>("file/scan/upload_url?apikey=" + _defaultValues["apikey"], HttpMethod.Get, null);
+
+            if (string.IsNullOrEmpty(uploadUrlObj.UploadUrl))
+                throw new Exception("Something when wrong while getting the upload url. Are you using an API key with support for this request?");
+
+            MultipartFormDataContent multi = new MultipartFormDataContent();
+            multi.Add(CreateFileContent(stream, filename, false)); //The big file upload API does not like it when multi-part uploads contain the size field
+
+            return await GetResponse<ScanResult>(uploadUrlObj.UploadUrl, HttpMethod.Post, multi);
+        }
+
+        private void ValidateScanFileArguments(Stream stream, long fileSizeLimit, string filename)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream), "You must provide a stream that is not null");
+
+            if (stream.Length <= 0)
+                throw new ArgumentException("You must provide a stream with content", nameof(stream));
+
+            if (RestrictSizeLimits && stream.Length > fileSizeLimit)
+                throw new SizeLimitException(fileSizeLimit, stream.Length);
+
+            if (string.IsNullOrWhiteSpace(filename))
+                throw new ArgumentException("You must provide a filename. Preferably the original filename.");
         }
 
         /// <summary>
@@ -289,7 +343,7 @@ namespace VirusTotalNET
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResult<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponse<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -344,7 +398,7 @@ namespace VirusTotalNET
             values.Add("resource", string.Join(",", resources));
 
             //https://www.virustotal.com/vtapi/v2/file/rescan
-            return GetResults<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponses<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -391,7 +445,7 @@ namespace VirusTotalNET
             values.Add("resource", resource);
 
             //https://www.virustotal.com/vtapi/v2/file/report
-            return GetResult<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponse<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -444,7 +498,7 @@ namespace VirusTotalNET
             values.Add("resource", string.Join(",", resources));
 
             //https://www.virustotal.com/vtapi/v2/file/report
-            return GetResults<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponses<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -461,7 +515,7 @@ namespace VirusTotalNET
             values.Add("url", url);
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResult<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponse<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -493,7 +547,7 @@ namespace VirusTotalNET
             values.Add("url", string.Join(Environment.NewLine, urlCast));
 
             //https://www.virustotal.com/vtapi/v2/url/scan
-            return GetResults<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponses<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -524,7 +578,7 @@ namespace VirusTotalNET
                 values.Add("scan", "1");
 
             //Output
-            return GetResult<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponse<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -560,7 +614,7 @@ namespace VirusTotalNET
                 values.Add("scan", "1");
 
             //Output
-            return GetResults<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponses<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -581,7 +635,7 @@ namespace VirusTotalNET
         {
             ip = ResourcesHelper.ValidateResourcea(ip, ResourceType.IP);
 
-            return GetResult<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
+            return GetResponse<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -602,7 +656,7 @@ namespace VirusTotalNET
             domain = ResourcesHelper.ValidateResourcea(domain, ResourceType.Domain);
 
             //Hack because VT thought it was a good idea to have this API call as GET
-            return GetResult<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
+            return GetResponse<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -656,7 +710,7 @@ namespace VirusTotalNET
             //TODO: before
 
             //https://www.virustotal.com/vtapi/v2/comments/get
-            return GetResult<CommentResult>("comments/get?apikey=" + _defaultValues["apikey"] + "&resource=" + resource, HttpMethod.Get, null);
+            return GetResponse<CommentResult>("comments/get?apikey=" + _defaultValues["apikey"] + "&resource=" + resource, HttpMethod.Get, null);
         }
 
         /// <summary>
@@ -710,7 +764,7 @@ namespace VirusTotalNET
             values.Add("comment", comment);
 
             //https://www.virustotal.com/vtapi/v2/comments/put
-            return GetResult<CreateCommentResult>("comments/put", HttpMethod.Post, CreateURLEncodedContent(values));
+            return GetResponse<CreateCommentResult>("comments/put", HttpMethod.Post, CreateURLEncodedContent(values));
         }
 
         /// <summary>
@@ -758,7 +812,7 @@ namespace VirusTotalNET
             return GetPublicUrlScanLink(url.ToString());
         }
 
-        private async Task<IEnumerable<T>> GetResults<T>(string url, HttpMethod method, HttpContent content)
+        private async Task<IEnumerable<T>> GetResponses<T>(string url, HttpMethod method, HttpContent content)
         {
             HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
@@ -779,7 +833,7 @@ namespace VirusTotalNET
             }
         }
 
-        private async Task<T> GetResult<T>(string url, HttpMethod method, HttpContent content)
+        private async Task<T> GetResponse<T>(string url, HttpMethod method, HttpContent content)
         {
             HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
@@ -797,13 +851,17 @@ namespace VirusTotalNET
 
         private async Task<HttpResponseMessage> SendRequest(string url, HttpMethod method, HttpContent content)
         {
+            //We need this check because sometimes url is a full url and sometimes it is just an url segment
+            if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                url = (UseTLS ? "https://" : "http://") + _apiUrl + url;
+
             HttpRequestMessage request = new HttpRequestMessage(method, url);
             request.Content = content;
 
             OnHTTPRequestSending?.Invoke(request);
 
             HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
-
+            
             OnHTTPResponseReceived?.Invoke(response);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
@@ -849,15 +907,18 @@ namespace VirusTotalNET
             return content;
         }
 
-        private HttpContent CreateFileContent(Stream stream, string fileName)
+        private HttpContent CreateFileContent(Stream stream, string fileName, bool includeSize = true)
         {
             StreamContent fileContent = new StreamContent(stream);
-            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-            {
-                Name = "\"file\"",
-                FileName = "\"" + fileName + "\"",
-                Size = stream.Length
-            };
+
+            ContentDispositionHeaderValue disposition = new ContentDispositionHeaderValue("form-data");
+            disposition.Name = "\"file\"";
+            disposition.FileName = "\"" + fileName + "\"";
+
+            if (includeSize)
+                disposition.Size = stream.Length;
+
+            fileContent.Headers.ContentDisposition = disposition;
             fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             return fileContent;
         }
