@@ -13,8 +13,12 @@
     <Description>A full implementation of the VirusTotal 2.0 API</Description>
     <Authors>Ian Qvist</Authors>
     <PackageTags>VirusTotal</PackageTags>
-    <PackageLicenseUrl>https://github.com/Genbox/VirusTotal.Net/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
