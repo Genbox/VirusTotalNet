@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +10,6 @@ namespace VirusTotalNET.Client
 {
     internal class Program
     {
-        private const string ScanUrl = "http://www.google.com/";
-
         private static async Task Main(string[] args)
         {
             await RunExample();
@@ -50,7 +48,9 @@ namespace VirusTotalNET.Client
 
             Console.WriteLine();
 
-            UrlReport urlReport = await virusTotal.GetUrlReportAsync(ScanUrl);
+            string scanUrl = "http://www.google.com/";
+
+            UrlReport urlReport = await virusTotal.GetUrlReportAsync(scanUrl);
 
             bool hasUrlBeenScannedBefore = urlReport.ResponseCode == UrlReportResponseCode.Present;
             Console.WriteLine("URL has been scanned before: " + (hasUrlBeenScannedBefore ? "Yes" : "No"));
@@ -62,7 +62,7 @@ namespace VirusTotalNET.Client
             }
             else
             {
-                UrlScanResult urlResult = await virusTotal.ScanUrlAsync(ScanUrl);
+                UrlScanResult urlResult = await virusTotal.ScanUrlAsync(scanUrl);
                 PrintScan(urlResult);
             }
         }
