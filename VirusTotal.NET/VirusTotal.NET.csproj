@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+    <Copyright>Copyright © Ian Qvist 2019</Copyright>
     <AssemblyName>VirusTotal.NET</AssemblyName>
     <PackageId>VirusTotal.NET</PackageId>
     <PackageProjectUrl>https://github.com/Genbox/VirusTotal.NET/</PackageProjectUrl>
@@ -16,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
