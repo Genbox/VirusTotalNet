@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Properties.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Packable>false</Packable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VirusTotalNet\VirusTotalNet.csproj" />
+  </ItemGroup>
+
+</Project>
