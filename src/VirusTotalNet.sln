@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirusTotalNet.Examples", "V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirusTotalNet.Tests", "VirusTotalNet.Tests\VirusTotalNet.Tests.csproj", "{1A6CAB28-AE7A-4B7B-A4B5-06123D2E4B64}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Imports", "_Imports", "{527837F9-33C1-4332-B64D-D7CD0594CC75}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Imports", "Imports", "{527837F9-33C1-4332-B64D-D7CD0594CC75}"
 	ProjectSection(SolutionItems) = preProject
 		..\Properties.targets = ..\Properties.targets
 	EndProjectSection

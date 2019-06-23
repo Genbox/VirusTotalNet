@@ -6,19 +6,11 @@ using VirusTotalNet.Objects;
 using VirusTotalNet.ResponseCodes;
 using VirusTotalNet.Results;
 
-namespace VirusTotalNet.Example
+namespace VirusTotalNet.Examples
 {
     internal class Program
     {
         private static async Task Main(string[] args)
-        {
-            await RunExample();
-
-            Console.WriteLine("Press a key to continue");
-            Console.ReadLine();
-        }
-
-        private static async Task RunExample()
         {
             VirusTotal virusTotal = new VirusTotal("YOUR API KEY HERE");
 

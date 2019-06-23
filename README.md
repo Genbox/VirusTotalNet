@@ -1,5 +1,7 @@
 # VirusTotal.NET - A full implementation of the VirusTotal 2.0 API
 
+[![NuGet](https://img.shields.io/nuget/v/VirusTotalNet.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/VirusTotalNet/)
+
 ### Features
 
 * Fully asynchronous API
@@ -34,7 +36,7 @@ Output:
 Seen before: True
 ```
 
-For more examples, take a look at the VirusTotal.NET Client included in the project.
+For more examples, take a look at the VirusTotal.Examples included in the project.
 
 ### Contributors
 * [keithjjones](https://github.com/keithjjones)
