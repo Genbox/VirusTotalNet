@@ -1,10 +1,9 @@
 using System;
 
-namespace VirusTotalNet.Objects
+namespace VirusTotalNet.Objects;
+
+public class UserComment
 {
-    public class UserComment
-    {
-        public string Comment { get; set; }
-        public DateTime Date { get; set; }
-    }
+    public string Comment { get; set; }
+    public DateTime Date { get; set; }
 }

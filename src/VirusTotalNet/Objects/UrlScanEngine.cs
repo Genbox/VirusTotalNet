@@ -1,20 +1,19 @@
-namespace VirusTotalNet.Objects
+namespace VirusTotalNet.Objects;
+
+public class UrlScanEngine
 {
-    public class UrlScanEngine
-    {
-        /// <summary>
-        /// True if the engine flagged the resource.
-        /// </summary>
-        public bool Detected { get; set; }
+    /// <summary>
+    /// True if the engine flagged the resource.
+    /// </summary>
+    public bool Detected { get; set; }
 
-        /// <summary>
-        /// Details about the detection
-        /// </summary>
-        public string Detail { get; set; }
+    /// <summary>
+    /// Details about the detection
+    /// </summary>
+    public string Detail { get; set; }
 
-        /// <summary>
-        /// Contains the name of the malware, if any.
-        /// </summary>
-        public string Result { get; set; }
-    }
+    /// <summary>
+    /// Contains the name of the malware, if any.
+    /// </summary>
+    public string Result { get; set; }
 }

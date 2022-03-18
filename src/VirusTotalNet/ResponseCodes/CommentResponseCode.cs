@@ -1,8 +1,7 @@
-namespace VirusTotalNet.ResponseCodes
+namespace VirusTotalNet.ResponseCodes;
+
+public enum CommentResponseCode
 {
-    public enum CommentResponseCode
-    {
-        Error = 0,
-        Success = 1
-    }
+    Error = 0,
+    Success = 1
 }

@@ -1,15 +1,14 @@
 using Newtonsoft.Json;
 
-namespace VirusTotalNet.Objects
+namespace VirusTotalNet.Objects;
+
+public class WebutationInfo
 {
-    public class WebutationInfo
-    {
-        [JsonProperty("Adult content")]
-        public string AdultContent { get; set; }
+    [JsonProperty("Adult content")]
+    public string AdultContent { get; set; }
 
-        [JsonProperty("Safety score")]
-        public int SafetyScore { get; set; }
+    [JsonProperty("Safety score")]
+    public int SafetyScore { get; set; }
 
-        public string Verdict { get; set; }
-    }
+    public string Verdict { get; set; }
 }

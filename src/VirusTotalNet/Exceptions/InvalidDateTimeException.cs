@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace VirusTotalNet.Exceptions
+namespace VirusTotalNet.Exceptions;
+
+public class InvalidDateTimeException : Exception
 {
-    public class InvalidDateTimeException : Exception
-    {
-        public InvalidDateTimeException(string message) : base(message) { }
-    }
+    public InvalidDateTimeException(string message) : base(message) { }
 }

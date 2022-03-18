@@ -6,68 +6,67 @@ using VirusTotalNet.Results;
 using VirusTotalNet.Tests.TestInternals;
 using Xunit;
 
-namespace VirusTotalNet.Tests
+namespace VirusTotalNet.Tests;
+
+public class FileRescanTests : TestBase
 {
-    public class FileRescanTests : TestBase
+    [Fact]
+    public async Task RescanKnownFile()
     {
-        [Fact]
-        public async Task RescanKnownFile()
-        {
-            RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.EICARMalware);
+        RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.EICARMalware);
 
+        //It should always be in the VirusTotal database. We expect it to rescan it
+        Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
+    }
+
+    //[Fact]
+    //public async Task RescanInvalidFile()
+    //{
+    //    //TODO: Can't seem to provoke an error response code.
+    //}
+
+    [Fact]
+    public async Task RescanMultipleKnownFile()
+    {
+        IEnumerable<RescanResult> fileResult = await VirusTotal.RescanFilesAsync(TestData.KnownHashes);
+
+        foreach (RescanResult rescanResult in fileResult)
+        {
             //It should always be in the VirusTotal database. We expect it to rescan it
-            Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
+            Assert.Equal(RescanResponseCode.Queued, rescanResult.ResponseCode);
         }
+    }
 
-        //[Fact]
-        //public async Task RescanInvalidFile()
-        //{
-        //    //TODO: Can't seem to provoke an error response code.
-        //}
+    [Fact]
+    public async Task RescanUnknownFile()
+    {
+        IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
 
-        [Fact]
-        public async Task RescanMultipleKnownFile()
-        {
-            IEnumerable<RescanResult> fileResult = await VirusTotal.RescanFilesAsync(TestData.KnownHashes);
+        RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.GetRandomSHA1s(1).First());
 
-            foreach (RescanResult rescanResult in fileResult)
-            {
-                //It should always be in the VirusTotal database. We expect it to rescan it
-                Assert.Equal(RescanResponseCode.Queued, rescanResult.ResponseCode);
-            }
-        }
+        //It should not be in the VirusTotal database already, which means it should return error.
+        Assert.Equal(RescanResponseCode.ResourceNotFound, fileResult.ResponseCode);
+    }
 
-        [Fact]
-        public async Task RescanUnknownFile()
-        {
-            IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
+    [Fact]
+    public async Task RescanSmallFile()
+    {
+        RescanResult fileResult = await VirusTotal.RescanFileAsync(new byte[1]);
 
-            RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.GetRandomSHA1s(1).First());
+        //It has been scanned before, we expect it to return queued.
+        Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
+    }
 
-            //It should not be in the VirusTotal database already, which means it should return error.
-            Assert.Equal(RescanResponseCode.ResourceNotFound, fileResult.ResponseCode);
-        }
+    [Fact]
+    public async Task RescanBatchLimit()
+    {
+        IgnoreMissingJson("[array] / Permalink", "[array] / scan_id", "[array] / SHA256");
 
-        [Fact]
-        public async Task RescanSmallFile()
-        {
-            RescanResult fileResult = await VirusTotal.RescanFileAsync(new byte[1]);
+        VirusTotal.RestrictNumberOfResources = false;
 
-            //It has been scanned before, we expect it to return queued.
-            Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
-        }
+        IEnumerable<RescanResult> results = await VirusTotal.RescanFilesAsync(TestData.GetRandomSHA1s(50));
 
-        [Fact]
-        public async Task RescanBatchLimit()
-        {
-            IgnoreMissingJson("[array] / Permalink", "[array] / scan_id", "[array] / SHA256");
-
-            VirusTotal.RestrictNumberOfResources = false;
-
-            IEnumerable<RescanResult> results = await VirusTotal.RescanFilesAsync(TestData.GetRandomSHA1s(50));
-
-            //We only expect 25 as VT simply returns 25 results no matter the batch size.
-            Assert.Equal(VirusTotal.RescanBatchSizeLimit, results.Count());
-        }
+        //We only expect 25 as VT simply returns 25 results no matter the batch size.
+        Assert.Equal(VirusTotal.RescanBatchSizeLimit, results.Count());
     }
 }

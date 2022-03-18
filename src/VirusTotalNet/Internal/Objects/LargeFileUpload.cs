@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace VirusTotalNet.Internal.Objects
+namespace VirusTotalNet.Internal.Objects;
+
+internal class LargeFileUpload
 {
-    internal class LargeFileUpload
-    {
-        [JsonProperty("upload_url")]
-        public string UploadUrl { get; set; }
-    }
+    [JsonProperty("upload_url")]
+    public string UploadUrl { get; set; }
 }
