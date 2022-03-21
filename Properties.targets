@@ -8,5 +8,15 @@
     <PackageProjectUrl>https://github.com/Genbox/VirusTotalNet/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Genbox/VirusTotalNet/</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+  </ItemGroup>
+
 </Project>
