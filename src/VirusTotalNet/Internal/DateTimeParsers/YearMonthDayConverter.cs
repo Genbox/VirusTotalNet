@@ -24,20 +24,22 @@ internal class YearMonthDayConverter : DateTimeConverterBase
         if (reader.Value == null)
             return DateTime.MinValue;
 
-        if (!(reader.Value is string stringVal))
-            throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + reader.Value);
+        string valueStr = reader.Value as string;
 
-        if (!ResourcesHelper.IsNumeric(stringVal))
+        if (string.IsNullOrEmpty(valueStr))
+            return DateTime.MinValue;
+
+        if (!ResourcesHelper.IsNumeric(valueStr))
             return DateTime.MinValue;
 
         //New format
-        if (DateTime.TryParseExact(stringVal, _newDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
+        if (DateTime.TryParseExact(valueStr, _newDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out DateTime result))
             return result;
 
         //Old format
-        if (DateTime.TryParseExact(stringVal, _oldDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
+        if (DateTime.TryParseExact(valueStr, _oldDateTimeFormat, _culture, DateTimeStyles.AllowWhiteSpaces, out result))
             return result;
 
-        throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + stringVal);
+        throw new InvalidDateTimeException("Invalid date/time from VirusTotal. Tried to parse: " + valueStr);
     }
 }
