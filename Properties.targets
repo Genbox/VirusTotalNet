@@ -2,15 +2,11 @@
   <PropertyGroup>
     <Version>2.0.0</Version>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright © Ian Qvist 2019</Copyright>
+    <Copyright>Copyright 2022, by Ian Qvist. All rights reserved.</Copyright>
     <RepositoryType>git</RepositoryType>
     <Authors>Ian Qvist</Authors>
     <PackageProjectUrl>https://github.com/Genbox/VirusTotalNet/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Genbox/VirusTotalNet/</RepositoryUrl>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-  </ItemGroup>
 </Project>
