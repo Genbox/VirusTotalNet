@@ -208,7 +208,7 @@ public class VirusTotal
     {
         ValidateScanFileArguments(stream, FileSizeLimit, filename);
 
-        MultipartFormDataContent multi = new MultipartFormDataContent();
+        using MultipartFormDataContent multi = new MultipartFormDataContent();
         multi.Add(CreateApiPart());
         multi.Add(CreateFileContent(stream, filename));
 
@@ -229,7 +229,7 @@ public class VirusTotal
         string filename = Path.GetFileName(filePath);
 
         using (Stream fs = File.OpenRead(filePath))
-            return await ScanLargeFileAsync(fs, filename);
+            return await ScanLargeFileAsync(fs, filename).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public class VirusTotal
             throw new FileNotFoundException("The file was not found.", file.Name);
 
         using (Stream fs = file.OpenRead())
-            return await ScanLargeFileAsync(fs, file.Name);
+            return await ScanLargeFileAsync(fs, file.Name).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public class VirusTotal
     public async Task<ScanResult> ScanLargeFileAsync(byte[] file, string filename)
     {
         using (MemoryStream ms = new MemoryStream(file))
-            return await ScanLargeFileAsync(ms, filename);
+            return await ScanLargeFileAsync(ms, filename).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -274,15 +274,15 @@ public class VirusTotal
             throw new ArgumentException($"Please use the ScanFileAsync() method for files smaller than {FileSizeLimit} bytes");
 
         //https://www.virustotal.com/vtapi/v2/file/scan/upload_url
-        LargeFileUpload uploadUrlObj = await GetResponse<LargeFileUpload>("file/scan/upload_url?apikey=" + _defaultValues["apikey"], HttpMethod.Get, null);
+        LargeFileUpload uploadUrlObj = await GetResponse<LargeFileUpload>("file/scan/upload_url?apikey=" + _defaultValues["apikey"], HttpMethod.Get, null).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(uploadUrlObj.UploadUrl))
             throw new Exception("Something when wrong while getting the upload url. Are you using an API key with support for this request?");
 
-        MultipartFormDataContent multi = new MultipartFormDataContent();
+        using MultipartFormDataContent multi = new MultipartFormDataContent();
         multi.Add(CreateFileContent(stream, filename, false)); //The big file upload API does not like it when multi-part uploads contain the size field
 
-        return await GetResponse<ScanResult>(uploadUrlObj.UploadUrl, HttpMethod.Post, multi);
+        return await GetResponse<ScanResult>(uploadUrlObj.UploadUrl, HttpMethod.Post, multi).ConfigureAwait(false);
     }
 
     private void ValidateScanFileArguments(Stream stream, long fileSizeLimit, string filename)
@@ -815,7 +815,7 @@ public class VirusTotal
 
     private async Task<IEnumerable<T>> GetResponses<T>(string url, HttpMethod method, HttpContent content)
     {
-        HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
         using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
         using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
@@ -825,7 +825,7 @@ public class VirusTotal
 
             SaveResponse(responseStream);
 
-            JToken token = JToken.Load(jsonTextReader);
+            JToken token = await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false);
 
             if (token.Type == JTokenType.Array)
                 return token.ToObject<List<T>>(_serializer);
@@ -836,7 +836,7 @@ public class VirusTotal
 
     private async Task<T> GetResponse<T>(string url, HttpMethod method, HttpContent content)
     {
-        HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
         using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
         using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
@@ -856,13 +856,13 @@ public class VirusTotal
         if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             url = (UseTLS ? "https://" : "http://") + _apiUrl + url;
 
-        HttpRequestMessage request = new HttpRequestMessage(method, url);
+        using HttpRequestMessage request = new HttpRequestMessage(method, url);
         request.Content = content;
 
         OnHTTPRequestSending?.Invoke(request);
 
         HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
-            
+
         OnHTTPResponseReceived?.Invoke(response);
 
         if (response.StatusCode == HttpStatusCode.NoContent)
