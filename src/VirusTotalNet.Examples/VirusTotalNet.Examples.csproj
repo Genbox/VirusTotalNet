@@ -2,7 +2,7 @@
   <Import Project="..\..\Properties.targets" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <Packable>false</Packable>
   </PropertyGroup>
