@@ -599,7 +599,7 @@ public class VirusTotal
     /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
     public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<string> urls, bool scanIfNoReport = false)
     {
-        urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL);
+        urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL | ResourceType.ScanId);
 
         string[] urlCast = urls as string[] ?? urls.ToArray();
 
