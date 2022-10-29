@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -171,7 +171,7 @@ public class VirusTotal
         string filename = Path.GetFileName(filePath);
 
         using Stream fs = File.OpenRead(filePath);
-        return await ScanFileAsync(fs, filename);
+        return await ScanFileAsync(fs, filename).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -217,7 +217,7 @@ public class VirusTotal
         multi.Add(CreateFileContent(stream, filename));
 
         //https://www.virustotal.com/vtapi/v2/file/scan
-        return await GetResponse<ScanResult>("file/scan", HttpMethod.Post, multi);
+        return await GetResponse<ScanResult>("file/scan", HttpMethod.Post, multi).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -309,9 +309,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the file.
     /// </summary>
-    public Task<RescanResult> RescanFileAsync(FileInfo file)
+    public async Task<RescanResult> RescanFileAsync(FileInfo file)
     {
-        return RescanFileAsync(ResourcesHelper.GetResourceIdentifier(file));
+        return await RescanFileAsync(ResourcesHelper.GetResourceIdentifier(file)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -319,9 +319,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the file.
     /// </summary>
-    public Task<RescanResult> RescanFileAsync(byte[] file)
+    public async Task<RescanResult> RescanFileAsync(byte[] file)
     {
-        return RescanFileAsync(ResourcesHelper.GetResourceIdentifier(file));
+        return await RescanFileAsync(ResourcesHelper.GetResourceIdentifier(file)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -329,9 +329,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the file.
     /// </summary>
-    public Task<RescanResult> RescanFileAsync(Stream stream)
+    public async Task<RescanResult> RescanFileAsync(Stream stream)
     {
-        return RescanFileAsync(ResourcesHelper.GetResourceIdentifier(stream));
+        return await RescanFileAsync(ResourcesHelper.GetResourceIdentifier(stream)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -339,16 +339,16 @@ public class VirusTotal
     /// Note: Before requesting a rescan you should retrieve the latest report on the file.
     /// </summary>
     /// <param name="resource">A hash of the file. It can be an MD5, SHA1 or SHA256</param>
-    public Task<RescanResult> RescanFileAsync(string resource)
+    public async Task<RescanResult> RescanFileAsync(string resource)
     {
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash);
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
 
         //https://www.virustotal.com/vtapi/v2/file/rescan
-        return GetResponse<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponse<RescanResult>("file/rescan", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -356,9 +356,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the files.
     /// </summary>
-    public Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<FileInfo> files)
+    public async Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<FileInfo> files)
     {
-        return RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(files));
+        return await RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(files)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -366,9 +366,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the files.
     /// </summary>
-    public Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<byte[]> files)
+    public async Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<byte[]> files)
     {
-        return RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(files));
+        return await RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(files)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -376,9 +376,9 @@ public class VirusTotal
     /// Note: This does not send the content of the streams to VirusTotal. It hashes the content and sends that instead.
     /// Note: Before requesting a rescan you should retrieve the latest report on the files.
     /// </summary>
-    public Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<Stream> streams)
+    public async Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<Stream> streams)
     {
-        return RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(streams));
+        return await RescanFilesAsync(ResourcesHelper.GetResourceIdentifier(streams)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -389,7 +389,7 @@ public class VirusTotal
     /// Note: You can only request a maximum of 25 rescans at the time.
     /// </summary>
     /// <param name="resourceList">a MD5, SHA1 or SHA256 of the files. You can also specify list made up of a combination of any of the three allowed hashes (up to 25 items), this allows you to perform a batch request with one single call.</param>
-    public Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<string> resourceList)
+    public async Task<IEnumerable<RescanResult>> RescanFilesAsync(IEnumerable<string> resourceList)
     {
         resourceList = ResourcesHelper.ValidateResourcea(resourceList, ResourceType.AnyHash);
 
@@ -399,11 +399,11 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many resources. There is a maximum of {RescanBatchSizeLimit} resources at the time.");
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(",", resources));
 
         //https://www.virustotal.com/vtapi/v2/file/rescan
-        return GetResponses<RescanResult>("file/rescan", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponses<RescanResult>("file/rescan", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -411,9 +411,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// </summary>
     /// <param name="file">The file you want to get a report on.</param>
-    public Task<FileReport> GetFileReportAsync(byte[] file)
+    public async Task<FileReport> GetFileReportAsync(byte[] file)
     {
-        return GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(file));
+        return await GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(file)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -421,9 +421,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// </summary>
     /// <param name="file">The file you want to get a report on.</param>
-    public Task<FileReport> GetFileReportAsync(FileInfo file)
+    public async Task<FileReport> GetFileReportAsync(FileInfo file)
     {
-        return GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(file));
+        return await GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(file)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -431,9 +431,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// </summary>
     /// <param name="stream">The stream you want to get a report on.</param>
-    public Task<FileReport> GetFileReportAsync(Stream stream)
+    public async Task<FileReport> GetFileReportAsync(Stream stream)
     {
-        return GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(stream));
+        return await GetFileReportAsync(ResourcesHelper.GetResourceIdentifier(stream)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -441,16 +441,16 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the file and sends that instead.
     /// </summary>
     /// <param name="resource">The resource (MD5, SHA1 or SHA256) you wish to get a report on.</param>
-    public Task<FileReport> GetFileReportAsync(string resource)
+    public async Task<FileReport> GetFileReportAsync(string resource)
     {
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.ScanId);
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
 
         //https://www.virustotal.com/vtapi/v2/file/report
-        return GetResponse<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponse<FileReport>("file/report", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -458,9 +458,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
     /// </summary>
     /// <param name="files">The files you want to get reports on.</param>
-    public Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<byte[]> files)
+    public async Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<byte[]> files)
     {
-        return GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(files));
+        return await GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(files)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -468,9 +468,9 @@ public class VirusTotal
     /// Note: This does not send the files to VirusTotal. It hashes the files and sends them instead.
     /// </summary>
     /// <param name="files">The files you want to get reports on.</param>
-    public Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<FileInfo> files)
+    public async Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<FileInfo> files)
     {
-        return GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(files));
+        return await GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(files)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -478,9 +478,9 @@ public class VirusTotal
     /// Note: This does not send the content of the streams to VirusTotal. It hashes the content of the stream and sends that instead.
     /// </summary>
     /// <param name="streams">The streams you want to get reports on.</param>
-    public Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<Stream> streams)
+    public async Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<Stream> streams)
     {
-        return GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(streams));
+        return await GetFileReportsAsync(ResourcesHelper.GetResourceIdentifier(streams)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -489,7 +489,7 @@ public class VirusTotal
     /// so query the report at regular intervals until the result shows up and do not keep submitting the file over and over again.
     /// </summary>
     /// <param name="resourceList">SHA1, MD5 or SHA256 of the file. It can also be a scan ID of a previous scan.</param>
-    public Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<string> resourceList)
+    public async Task<IEnumerable<FileReport>> GetFileReportsAsync(IEnumerable<string> resourceList)
     {
         resourceList = ResourcesHelper.ValidateResourcea(resourceList, ResourceType.AnyHash | ResourceType.ScanId);
 
@@ -499,11 +499,11 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many hashes. There is a maximum of {FileReportBatchSizeLimit} resources at the same time.");
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(",", resources));
 
         //https://www.virustotal.com/vtapi/v2/file/report
-        return GetResponses<FileReport>("file/report", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponses<FileReport>("file/report", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -511,16 +511,16 @@ public class VirusTotal
     /// Note: Before performing your submission, you should retrieve the latest report on the URL.
     /// </summary>
     /// <param name="url">The URL to process.</param>
-    public Task<UrlScanResult> ScanUrlAsync(string url)
+    public async Task<UrlScanResult> ScanUrlAsync(string url)
     {
         url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL);
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("url", url);
 
         //https://www.virustotal.com/vtapi/v2/url/scan
-        return GetResponse<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponse<UrlScanResult>("url/scan", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -528,9 +528,9 @@ public class VirusTotal
     /// Note: Before performing your submission, you should retrieve the latest report on the URL.
     /// </summary>
     /// <param name="url">The URL to process.</param>
-    public Task<UrlScanResult> ScanUrlAsync(Uri url)
+    public async Task<UrlScanResult> ScanUrlAsync(Uri url)
     {
-        return ScanUrlAsync(url.ToString());
+        return await ScanUrlAsync(url.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -538,7 +538,7 @@ public class VirusTotal
     /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
     /// </summary>
     /// <param name="urls">The URLs to process.</param>
-    public Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<string> urls)
+    public async Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<string> urls)
     {
         urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL);
 
@@ -548,11 +548,11 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlScanBatchSizeLimit} URLs at the same time.");
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("url", string.Join(Environment.NewLine, urlCast));
 
         //https://www.virustotal.com/vtapi/v2/url/scan
-        return GetResponses<UrlScanResult>("url/scan", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponses<UrlScanResult>("url/scan", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -560,9 +560,9 @@ public class VirusTotal
     /// Note: Before performing your submission, you should retrieve the latest reports on the URLs.
     /// </summary>
     /// <param name="urlList">The URLs to process.</param>
-    public Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<Uri> urlList)
+    public async Task<IEnumerable<UrlScanResult>> ScanUrlsAsync(IEnumerable<Uri> urlList)
     {
-        return ScanUrlsAsync(urlList.Select(x => x.ToString()));
+        return await ScanUrlsAsync(urlList.Select(x => x.ToString())).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -570,12 +570,12 @@ public class VirusTotal
     /// </summary>
     /// <param name="url">The URL you wish to get the report on.</param>
     /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
-    public Task<UrlReport> GetUrlReportAsync(string url, bool scanIfNoReport = false)
+    public async Task<UrlReport> GetUrlReportAsync(string url, bool scanIfNoReport = false)
     {
         url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL | ResourceType.ScanId);
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", url);
 
         //Optional
@@ -583,7 +583,7 @@ public class VirusTotal
             values.Add("scan", "1");
 
         //Output
-        return GetResponse<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponse<UrlReport>("url/report", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -591,9 +591,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="url">The URL you wish to get the report on.</param>
     /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URL if it is not present in the database.</param>
-    public Task<UrlReport> GetUrlReportAsync(Uri url, bool scanIfNoReport = false)
+    public async Task<UrlReport> GetUrlReportAsync(Uri url, bool scanIfNoReport = false)
     {
-        return GetUrlReportAsync(url.ToString(), scanIfNoReport);
+        return await GetUrlReportAsync(url.ToString(), scanIfNoReport).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -601,7 +601,7 @@ public class VirusTotal
     /// </summary>
     /// <param name="urls">The URLs you wish to get the reports on.</param>
     /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
-    public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<string> urls, bool scanIfNoReport = false)
+    public async Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<string> urls, bool scanIfNoReport = false)
     {
         urls = ResourcesHelper.ValidateResourcea(urls, ResourceType.URL | ResourceType.ScanId);
 
@@ -611,7 +611,7 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlReportBatchSizeLimit} urls at the time.");
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(Environment.NewLine, urlCast));
 
         //Optional
@@ -619,7 +619,7 @@ public class VirusTotal
             values.Add("scan", "1");
 
         //Output
-        return GetResponses<UrlReport>("url/report", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponses<UrlReport>("url/report", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -627,50 +627,50 @@ public class VirusTotal
     /// </summary>
     /// <param name="urlList">The URLs you wish to get the reports on.</param>
     /// <param name="scanIfNoReport">Set to true if you wish VirusTotal to scan the URLs if it is not present in the database.</param>
-    public Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
+    public async Task<IEnumerable<UrlReport>> GetUrlReportsAsync(IEnumerable<Uri> urlList, bool scanIfNoReport = false)
     {
-        return GetUrlReportsAsync(urlList.Select(x => x.ToString()), scanIfNoReport);
+        return await GetUrlReportsAsync(urlList.Select(x => x.ToString()), scanIfNoReport).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Gets a scan report from an IP
     /// </summary>
     /// <param name="ip">The IP you wish to get the report on.</param>
-    public Task<IPReport> GetIPReportAsync(string ip)
+    public async Task<IPReport> GetIPReportAsync(string ip)
     {
         ip = ResourcesHelper.ValidateResourcea(ip, ResourceType.IP);
 
-        return GetResponse<IPReport>("ip-address/report?apikey=" + _defaultValues["apikey"] + "&ip=" + ip, HttpMethod.Get, null);
+        return await GetResponse<IPReport>($"ip-address/report?apikey={_apiKey}&ip={ip}", HttpMethod.Get, null).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Gets a scan report from an IP
     /// </summary>
     /// <param name="ip">The IP you wish to get the report on.</param>
-    public Task<IPReport> GetIPReportAsync(IPAddress ip)
+    public async Task<IPReport> GetIPReportAsync(IPAddress ip)
     {
-        return GetIPReportAsync(ip.ToString());
+        return await GetIPReportAsync(ip.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Gets a scan report from a domain
     /// </summary>
     /// <param name="domain">The domain you wish to get the report on.</param>
-    public Task<DomainReport> GetDomainReportAsync(string domain)
+    public async Task<DomainReport> GetDomainReportAsync(string domain)
     {
         domain = ResourcesHelper.ValidateResourcea(domain, ResourceType.Domain);
 
         //Hack because VT thought it was a good idea to have this API call as GET
-        return GetResponse<DomainReport>("domain/report?apikey=" + _defaultValues["apikey"] + "&domain=" + domain, HttpMethod.Get, null);
+        return await GetResponse<DomainReport>($"domain/report?apikey={_apiKey}&domain={domain}", HttpMethod.Get, null).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Gets a scan report from a domain
     /// </summary>
     /// <param name="domain">The domain you wish to get the report on.</param>
-    public Task<DomainReport> GetDomainReportAsync(Uri domain)
+    public async Task<DomainReport> GetDomainReportAsync(Uri domain)
     {
-        return GetDomainReportAsync(domain.Host);
+        return await GetDomainReportAsync(domain.Host).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -678,9 +678,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="file">The file you wish to retrieve a comment from</param>
     /// <param name="before">TODO</param>
-    public Task<CommentResult> GetCommentAsync(byte[] file, DateTime? before = null)
+    public async Task<CommentResult> GetCommentAsync(byte[] file, DateTime? before = null)
     {
-        return GetCommentAsync(ResourcesHelper.GetResourceIdentifier(file), before);
+        return await GetCommentAsync(ResourcesHelper.GetResourceIdentifier(file), before).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -688,9 +688,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="file">The file you wish to retrieve a comment from</param>
     /// <param name="before">TODO</param>
-    public Task<CommentResult> GetCommentAsync(FileInfo file, DateTime? before = null)
+    public async Task<CommentResult> GetCommentAsync(FileInfo file, DateTime? before = null)
     {
-        return GetCommentAsync(ResourcesHelper.GetResourceIdentifier(file), before);
+        return await GetCommentAsync(ResourcesHelper.GetResourceIdentifier(file), before).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -698,9 +698,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="uri">The URL you wish to retrieve a comment from</param>
     /// <param name="before">TODO</param>
-    public Task<CommentResult> GetCommentAsync(Uri uri, DateTime? before = null)
+    public async Task<CommentResult> GetCommentAsync(Uri uri, DateTime? before = null)
     {
-        return GetCommentAsync(uri.ToString(), before);
+        return await GetCommentAsync(uri.ToString(), before).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -708,14 +708,14 @@ public class VirusTotal
     /// </summary>
     /// <param name="resource">The MD5/SHA1/SHA256 hash or URL.</param>
     /// <param name="before">TODO</param>
-    public Task<CommentResult> GetCommentAsync(string resource, DateTime? before = null)
+    public async Task<CommentResult> GetCommentAsync(string resource, DateTime? before = null)
     {
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.URL);
 
         //TODO: before
 
         //https://www.virustotal.com/vtapi/v2/comments/get
-        return GetResponse<CommentResult>("comments/get?apikey=" + _defaultValues["apikey"] + "&resource=" + resource, HttpMethod.Get, null);
+        return await GetResponse<CommentResult>($"comments/get?apikey={_apiKey}&resource={resource}", HttpMethod.Get, null).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -723,9 +723,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="file">The file you wish to create a comment on</param>
     /// <param name="comment">The comment you wish to add.</param>
-    public Task<CreateCommentResult> CreateCommentAsync(byte[] file, string comment)
+    public async Task<CreateCommentResult> CreateCommentAsync(byte[] file, string comment)
     {
-        return CreateCommentAsync(ResourcesHelper.GetResourceIdentifier(file), comment);
+        return await CreateCommentAsync(ResourcesHelper.GetResourceIdentifier(file), comment).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -733,9 +733,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="file">The file you wish to create a comment on</param>
     /// <param name="comment">The comment you wish to add.</param>
-    public Task<CreateCommentResult> CreateCommentAsync(FileInfo file, string comment)
+    public async Task<CreateCommentResult> CreateCommentAsync(FileInfo file, string comment)
     {
-        return CreateCommentAsync(ResourcesHelper.GetResourceIdentifier(file), comment);
+        return await CreateCommentAsync(ResourcesHelper.GetResourceIdentifier(file), comment).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -743,9 +743,9 @@ public class VirusTotal
     /// </summary>
     /// <param name="url">The URL you wish to create a comment on</param>
     /// <param name="comment">The comment you wish to add.</param>
-    public Task<CreateCommentResult> CreateCommentAsync(Uri url, string comment)
+    public async Task<CreateCommentResult> CreateCommentAsync(Uri url, string comment)
     {
-        return CreateCommentAsync(url.ToString(), comment);
+        return await CreateCommentAsync(url.ToString(), comment).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -753,7 +753,7 @@ public class VirusTotal
     /// </summary>
     /// <param name="resource">The MD5/SHA1/SHA256 hash or URL.</param>
     /// <param name="comment">The comment you wish to add.</param>
-    public Task<CreateCommentResult> CreateCommentAsync(string resource, string comment)
+    public async Task<CreateCommentResult> CreateCommentAsync(string resource, string comment)
     {
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.URL);
 
@@ -764,12 +764,12 @@ public class VirusTotal
             throw new ArgumentOutOfRangeException(nameof(comment), $"Your comment is larger than the maximum size of {CommentSizeRestriction / 1024} KB");
 
         //Required
-        IDictionary<string, string> values = new Dictionary<string, string>();
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
         values.Add("comment", comment);
 
         //https://www.virustotal.com/vtapi/v2/comments/put
-        return GetResponse<CreateCommentResult>("comments/put", HttpMethod.Post, CreateURLEncodedContent(values));
+        return await GetResponse<CreateCommentResult>("comments/put", HttpMethod.Post, CreateUrlEncodedContent(values)).ConfigureAwait(false);
     }
 
     /// <summary>
