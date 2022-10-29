@@ -11,17 +11,16 @@ namespace VirusTotalNet.Internal.Other;
 /// </summary>
 internal class CustomURLEncodedContent : ByteArrayContent
 {
-    public CustomURLEncodedContent(IEnumerable<KeyValuePair<string, string>> nameValueCollection)
-        : base(GetContentByteArray(nameValueCollection))
+    public CustomURLEncodedContent(IEnumerable<KeyValuePair<string, string>> pairs) : base(GetContentByteArray(pairs))
     {
         Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
     }
 
-    private static byte[] GetContentByteArray(IEnumerable<KeyValuePair<string, string>> nameValueCollection)
+    private static byte[] GetContentByteArray(IEnumerable<KeyValuePair<string, string>> pairs)
     {
         // Encode and concatenate data
         StringBuilder builder = new StringBuilder();
-        foreach (KeyValuePair<string, string> pair in nameValueCollection)
+        foreach (KeyValuePair<string, string> pair in pairs)
         {
             if (builder.Length > 0)
                 builder.Append('&');
