@@ -11,7 +11,7 @@ public class GeneralTests : TestBase
     [Fact]
     public async Task UnauthorizedScan()
     {
-        VirusTotal virusTotal = new VirusTotal("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); //64 characters
+        using VirusTotal virusTotal = new VirusTotal("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"); //64 characters
         await Assert.ThrowsAsync<AccessDeniedException>(async () => await virusTotal.GetFileReportAsync(TestData.KnownHashes.First()));
     }
 

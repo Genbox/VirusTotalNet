@@ -71,6 +71,8 @@ public abstract class TestBase : IDisposable
 
     public virtual void Dispose()
     {
+        VirusTotal.Dispose();
+
         if (_errors.Count == 0)
             return;
 

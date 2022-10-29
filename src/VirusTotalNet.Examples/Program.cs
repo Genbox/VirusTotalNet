@@ -12,7 +12,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        VirusTotal virusTotal = new VirusTotal("YOUR API KEY HERE");
+        using VirusTotal virusTotal = new VirusTotal("YOUR API KEY HERE");
 
         //Use HTTPS instead of HTTP
         virusTotal.UseTLS = true;

@@ -18,7 +18,7 @@ using VirusTotalNet.Results;
 
 namespace VirusTotalNet;
 
-public class VirusTotal
+public class VirusTotal : IDisposable
 {
     private readonly HttpClient _client;
     private readonly HttpClientHandler _httpClientHandler;
@@ -930,5 +930,20 @@ public class VirusTotal
     {
         values.Add("apikey", _apiKey);
         return new CustomURLEncodedContent(values);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _client.Dispose();
+            _httpClientHandler.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
