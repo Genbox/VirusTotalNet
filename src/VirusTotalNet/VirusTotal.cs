@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -204,7 +204,7 @@ public class VirusTotal
     /// </summary>
     /// <param name="stream">The file to scan</param>
     /// <param name="filename">The filename of the file</param>
-    public Task<ScanResult> ScanFileAsync(Stream stream, string filename)
+    public async Task<ScanResult> ScanFileAsync(Stream stream, string filename)
     {
         ValidateScanFileArguments(stream, FileSizeLimit, filename);
 
@@ -213,7 +213,7 @@ public class VirusTotal
         multi.Add(CreateFileContent(stream, filename));
 
         //https://www.virustotal.com/vtapi/v2/file/scan
-        return GetResponse<ScanResult>("file/scan", HttpMethod.Post, multi);
+        return await GetResponse<ScanResult>("file/scan", HttpMethod.Post, multi);
     }
 
     /// <summary>
