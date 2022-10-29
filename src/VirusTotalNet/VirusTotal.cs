@@ -27,8 +27,12 @@ public class VirusTotal
     private readonly string _apiUrl;
     private readonly string _apiKey;
 
+    /// <summary>
+    /// Create a new instance of VirusTotal client
+    /// </summary>
     /// <param name="apiKey">The API key you got from Virus Total</param>
     /// <param name="apiUrl">An optional url for a different API endpoint</param>
+    /// <exception cref="ArgumentException"></exception>
     public VirusTotal(string apiKey, string apiUrl = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -272,10 +276,10 @@ public class VirusTotal
         ValidateScanFileArguments(stream, LargeFileSizeLimit, filename);
 
         if (stream.Length <= FileSizeLimit)
-            throw new ArgumentException($"Please use the ScanFileAsync() method for files smaller than {FileSizeLimit} bytes");
+            throw new ArgumentException($"Please use the ScanFileAsync() method for files smaller than {FileSizeLimit} bytes", nameof(stream));
 
         //https://www.virustotal.com/vtapi/v2/file/scan/upload_url
-        LargeFileUpload uploadUrlObj = await GetResponse<LargeFileUpload>("file/scan/upload_url?apikey=" + _defaultValues["apikey"], HttpMethod.Get, null).ConfigureAwait(false);
+        LargeFileUpload uploadUrlObj = await GetResponse<LargeFileUpload>("file/scan/upload_url?apikey=" + _apiKey, HttpMethod.Get, null).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(uploadUrlObj.UploadUrl))
             throw new Exception("Something when wrong while getting the upload url. Are you using an API key with support for this request?");
@@ -298,7 +302,7 @@ public class VirusTotal
             throw new SizeLimitException(fileSizeLimit, stream.Length);
 
         if (string.IsNullOrWhiteSpace(filename))
-            throw new ArgumentException("You must provide a filename. Preferably the original filename.");
+            throw new ArgumentException("You must provide a filename. Preferably the original filename.", nameof(filename));
     }
 
     /// <summary>
