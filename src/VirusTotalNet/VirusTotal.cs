@@ -24,16 +24,20 @@ public class VirusTotal
     private readonly HttpClientHandler _httpClientHandler;
     private readonly Dictionary<string, string> _defaultValues;
     private readonly JsonSerializer _serializer;
-    private readonly string _apiUrl = "www.virustotal.com/vtapi/v2/";
+    private readonly string _defaultApiUrl = "www.virustotal.com/vtapi/v2/";
+    private readonly string _apiUrl;
 
     /// <param name="apiKey">The API key you got from Virus Total</param>
-    public VirusTotal(string apiKey)
+    /// <param name="apiUrl">An optional url for a different API endpoint</param>
+    public VirusTotal(string apiKey, string apiUrl = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new ArgumentException("You have to set an API key.", nameof(apiKey));
 
         if (apiKey.Length < 64)
             throw new ArgumentException("API key is too short.", nameof(apiKey));
+
+        _apiUrl = apiUrl ?? _defaultApiUrl;
 
         _defaultValues = new Dictionary<string, string>(1);
         _defaultValues.Add("apikey", apiKey);
