@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -163,15 +163,15 @@ public class VirusTotal
     /// Note: It is highly encouraged to get the report of the file before scanning, in case it has already been scanned before.
     /// </summary>
     /// <param name="filePath">The file to scan</param>
-    public async Task ScanFileAsync(string filePath)
+    public async Task<ScanResult> ScanFileAsync(string filePath)
     {
         if (!File.Exists(filePath))
             throw new FileNotFoundException("The file was not found.", filePath);
 
         string filename = Path.GetFileName(filePath);
 
-        using (Stream fs = File.OpenRead(filePath))
-            await ScanFileAsync(fs, filename);
+        using Stream fs = File.OpenRead(filePath);
+        return await ScanFileAsync(fs, filename);
     }
 
     /// <summary>
@@ -184,8 +184,8 @@ public class VirusTotal
         if (!file.Exists)
             throw new FileNotFoundException("The file was not found.", file.Name);
 
-        using (Stream fs = file.OpenRead())
-            return await ScanFileAsync(fs, file.Name).ConfigureAwait(false);
+        using Stream fs = file.OpenRead();
+        return await ScanFileAsync(fs, file.Name).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -197,8 +197,8 @@ public class VirusTotal
     /// <param name="filename">The filename of the file</param>
     public async Task<ScanResult> ScanFileAsync(byte[] file, string filename)
     {
-        using (MemoryStream ms = new MemoryStream(file))
-            return await ScanFileAsync(ms, filename).ConfigureAwait(false);
+        using MemoryStream ms = new MemoryStream(file);
+        return await ScanFileAsync(ms, filename).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -232,8 +232,8 @@ public class VirusTotal
 
         string filename = Path.GetFileName(filePath);
 
-        using (Stream fs = File.OpenRead(filePath))
-            return await ScanLargeFileAsync(fs, filename).ConfigureAwait(false);
+        using Stream fs = File.OpenRead(filePath);
+        return await ScanLargeFileAsync(fs, filename).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -246,8 +246,8 @@ public class VirusTotal
         if (!file.Exists)
             throw new FileNotFoundException("The file was not found.", file.Name);
 
-        using (Stream fs = file.OpenRead())
-            return await ScanLargeFileAsync(fs, file.Name).ConfigureAwait(false);
+        using Stream fs = file.OpenRead();
+        return await ScanLargeFileAsync(fs, file.Name).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -259,8 +259,8 @@ public class VirusTotal
     /// <param name="filename">The filename of the file</param>
     public async Task<ScanResult> ScanLargeFileAsync(byte[] file, string filename)
     {
-        using (MemoryStream ms = new MemoryStream(file))
-            return await ScanLargeFileAsync(ms, filename).ConfigureAwait(false);
+        using MemoryStream ms = new MemoryStream(file);
+        return await ScanLargeFileAsync(ms, filename).ConfigureAwait(false);
     }
 
     /// <summary>

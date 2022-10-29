@@ -69,7 +69,7 @@ public abstract class TestBase : IDisposable
         errorEventArgs.ErrorContext.Handled = true;
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         if (!_errors.Any())
             return;
@@ -159,5 +159,7 @@ public abstract class TestBase : IDisposable
 
         if (missingFieldInCSharp.Any() || missingPropertyInJson.Any() || other.Any())
             throw new Exception(sb + Environment.NewLine + "Raw JSON: " + Environment.NewLine + LastCallInJSON);
+
+        GC.SuppressFinalize(this);
     }
 }

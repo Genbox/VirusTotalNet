@@ -2,7 +2,7 @@
   <Import Project="..\..\Properties.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>A full implementation of the VirusTotal 2.0 API</Description>
     <PackageTags>VirusTotal</PackageTags>
   </PropertyGroup>
