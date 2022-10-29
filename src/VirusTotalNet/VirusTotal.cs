@@ -878,9 +878,6 @@ public class VirusTotal
         if (response.StatusCode != HttpStatusCode.OK)
             throw new Exception("API gave error code " + response.StatusCode);
 
-        if (string.IsNullOrWhiteSpace(response.Content.ToString()))
-            throw new Exception("There were no content in the response.");
-
         return response;
     }
 
