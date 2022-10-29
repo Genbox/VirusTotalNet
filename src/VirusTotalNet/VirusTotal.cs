@@ -22,10 +22,10 @@ public class VirusTotal
 {
     private readonly HttpClient _client;
     private readonly HttpClientHandler _httpClientHandler;
-    private readonly Dictionary<string, string> _defaultValues;
     private readonly JsonSerializer _serializer;
     private readonly string _defaultApiUrl = "www.virustotal.com/vtapi/v2/";
     private readonly string _apiUrl;
+    private readonly string _apiKey;
 
     /// <param name="apiKey">The API key you got from Virus Total</param>
     /// <param name="apiUrl">An optional url for a different API endpoint</param>
@@ -37,21 +37,18 @@ public class VirusTotal
         if (apiKey.Length < 64)
             throw new ArgumentException("API key is too short.", nameof(apiKey));
 
+        _apiKey = apiKey;
         _apiUrl = apiUrl ?? _defaultApiUrl;
-
-        _defaultValues = new Dictionary<string, string>(1);
-        _defaultValues.Add("apikey", apiKey);
 
         _httpClientHandler = new HttpClientHandler();
         _httpClientHandler.AllowAutoRedirect = true;
+        _client = new HttpClient(_httpClientHandler);
 
         JsonSerializerSettings jsonSettings = new JsonSerializerSettings();
         jsonSettings.NullValueHandling = NullValueHandling.Ignore;
         jsonSettings.Formatting = Formatting.None;
 
         _serializer = JsonSerializer.Create(jsonSettings);
-
-        _client = new HttpClient(_httpClientHandler);
 
         RestrictSizeLimits = true;
         RestrictNumberOfResources = true;
@@ -344,7 +341,7 @@ public class VirusTotal
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash);
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
 
         //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -399,7 +396,7 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many resources. There is a maximum of {RescanBatchSizeLimit} resources at the time.");
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(",", resources));
 
         //https://www.virustotal.com/vtapi/v2/file/rescan
@@ -446,7 +443,7 @@ public class VirusTotal
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.ScanId);
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
 
         //https://www.virustotal.com/vtapi/v2/file/report
@@ -499,7 +496,7 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many hashes. There is a maximum of {FileReportBatchSizeLimit} resources at the same time.");
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(",", resources));
 
         //https://www.virustotal.com/vtapi/v2/file/report
@@ -516,7 +513,7 @@ public class VirusTotal
         url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL);
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("url", url);
 
         //https://www.virustotal.com/vtapi/v2/url/scan
@@ -548,7 +545,7 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlScanBatchSizeLimit} URLs at the same time.");
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
         values.Add("url", string.Join(Environment.NewLine, urlCast));
 
         //https://www.virustotal.com/vtapi/v2/url/scan
@@ -575,7 +572,7 @@ public class VirusTotal
         url = ResourcesHelper.ValidateResourcea(url, ResourceType.URL | ResourceType.ScanId);
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(3, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", url);
 
         //Optional
@@ -611,7 +608,7 @@ public class VirusTotal
             throw new ResourceLimitException($"Too many URLs. There is a maximum of {UrlReportBatchSizeLimit} urls at the time.");
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(3, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", string.Join(Environment.NewLine, urlCast));
 
         //Optional
@@ -764,7 +761,7 @@ public class VirusTotal
             throw new ArgumentOutOfRangeException(nameof(comment), $"Your comment is larger than the maximum size of {CommentSizeRestriction / 1024} KB");
 
         //Required
-        Dictionary<string, string> values = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> values = new Dictionary<string, string>(3, StringComparer.OrdinalIgnoreCase);
         values.Add("resource", resource);
         values.Add("comment", comment);
 
@@ -903,7 +900,7 @@ public class VirusTotal
 
     private HttpContent CreateApiPart()
     {
-        HttpContent content = new StringContent(_defaultValues["apikey"]);
+        HttpContent content = new StringContent(_apiKey);
         content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
             Name = "\"apikey\""
@@ -928,8 +925,9 @@ public class VirusTotal
         return fileContent;
     }
 
-    private HttpContent CreateURLEncodedContent(IDictionary<string, string> values)
+    private HttpContent CreateUrlEncodedContent(Dictionary<string, string> values)
     {
-        return new CustomURLEncodedContent(_defaultValues.Concat(values));
+        values.Add("apikey", _apiKey);
+        return new CustomURLEncodedContent(values);
     }
 }
