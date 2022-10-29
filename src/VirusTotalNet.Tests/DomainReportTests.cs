@@ -12,7 +12,9 @@ public class DomainReportTests : TestBase
     [Fact]
     public async Task GetDomainReportKnownDomain()
     {
-        DomainReport report = await VirusTotal.GetDomainReportAsync(TestData.KnownDomains.First());
+        IgnoreMissingJson(" / Alexa category", " / Categories", " / Dr.Web category", " / TrendMicro category", " / Websense ThreatSeeker category");
+
+        DomainReport report = await VirusTotal.GetDomainReportAsync(TestData.KnownDomains[0]);
         Assert.Equal(DomainResponseCode.Present, report.ResponseCode);
     }
 

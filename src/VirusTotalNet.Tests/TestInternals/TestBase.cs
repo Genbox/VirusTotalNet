@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -71,14 +71,14 @@ public abstract class TestBase : IDisposable
 
     public virtual void Dispose()
     {
-        if (!_errors.Any())
+        if (_errors.Count == 0)
             return;
 
         // Sort the errors
         // Also de-duplicate them, as there is no point in blasting us with multiple instances of the "same" error
-        Dictionary<string, ErrorEventArgs> missingFieldInCSharp = new Dictionary<string, ErrorEventArgs>();
-        Dictionary<string, ErrorEventArgs> missingPropertyInJson = new Dictionary<string, ErrorEventArgs>();
-        Dictionary<string, ErrorEventArgs> other = new Dictionary<string, ErrorEventArgs>();
+        Dictionary<string, ErrorEventArgs> missingFieldInCSharp = new Dictionary<string, ErrorEventArgs>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ErrorEventArgs> missingPropertyInJson = new Dictionary<string, ErrorEventArgs>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ErrorEventArgs> other = new Dictionary<string, ErrorEventArgs>(StringComparer.OrdinalIgnoreCase);
 
         foreach (ErrorEventArgs error in _errors)
         {
@@ -87,16 +87,16 @@ public abstract class TestBase : IDisposable
 
             key = _normalizeRegex.Replace(key, "[array]");
 
-            if (errorMessage.StartsWith("Could not find member"))
+            if (errorMessage.StartsWith("Could not find member", StringComparison.OrdinalIgnoreCase))
             {
                 // Field in JSON is missing in C#
                 if (!_ignoreMissingCSharp.Contains(key) && !missingFieldInCSharp.ContainsKey(key))
                     missingFieldInCSharp.Add(key, error);
             }
-            else if (errorMessage.StartsWith("Required property"))
+            else if (errorMessage.StartsWith("Required property", StringComparison.OrdinalIgnoreCase))
             {
                 // Field in C# is missing in JSON
-                if (!_ignoreMissingJson.Contains(key) && !missingPropertyInJson.ContainsKey(key))
+                if (!_ignoreMissingJson.Contains(key, StringComparer.OrdinalIgnoreCase) && !missingPropertyInJson.ContainsKey(key))
                     missingPropertyInJson.Add(key, error);
             }
             else
@@ -109,7 +109,7 @@ public abstract class TestBase : IDisposable
         // Combine all errors into a nice text
         StringBuilder sb = new StringBuilder();
 
-        if (missingFieldInCSharp.Any())
+        if (missingFieldInCSharp.Count > 0)
         {
             sb.AppendLine("Fields missing in C# (Present in JSON)");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in missingFieldInCSharp)
@@ -118,7 +118,7 @@ public abstract class TestBase : IDisposable
             sb.AppendLine();
         }
 
-        if (missingPropertyInJson.Any())
+        if (missingPropertyInJson.Count > 0)
         {
             sb.AppendLine("Fields missing in JSON (Present in C#)");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in missingPropertyInJson)
@@ -127,7 +127,7 @@ public abstract class TestBase : IDisposable
             sb.AppendLine();
         }
 
-        if (other.Any())
+        if (other.Count > 0)
         {
             sb.AppendLine("Other errors");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in other)
@@ -136,16 +136,16 @@ public abstract class TestBase : IDisposable
             sb.AppendLine();
         }
 
-        if (missingFieldInCSharp.Any())
+        if (missingFieldInCSharp.Count > 0)
         {
             // Helper line of properties that can be ignored
             sb.AppendLine("Ignore JSON props missing from C#:");
-            sb.AppendLine(nameof(IgnoreMissingCSharp) + "(" + string.Join(", ", missingFieldInCSharp.OrderBy(s => s.Key).Select(s => $"\"{s.Key}\"")) + ");");
+            sb.AppendLine($"{nameof(IgnoreMissingCSharp)}({string.Join(", ", missingFieldInCSharp.OrderBy(s => s.Key).Select(s => $"\"{s.Key}\""))});");
 
             sb.AppendLine();
         }
 
-        if (missingPropertyInJson.Any())
+        if (missingPropertyInJson.Count > 0)
         {
             // Helper line of properties that can be ignored
             sb.AppendLine("Ignore C# props missing from JSON:");
@@ -157,8 +157,13 @@ public abstract class TestBase : IDisposable
         if (!ThrowOnMissingContract)
             return;
 
-        if (missingFieldInCSharp.Any() || missingPropertyInJson.Any() || other.Any())
-            throw new Exception(sb + Environment.NewLine + "Raw JSON: " + Environment.NewLine + LastCallInJSON);
+        if (missingFieldInCSharp.Count > 0 || missingPropertyInJson.Count > 0 || other.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("Raw JSON: ");
+            sb.AppendLine(LastCallInJSON);
+            throw new Exception(sb.ToString());
+        }
 
         GC.SuppressFinalize(this);
     }

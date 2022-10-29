@@ -9,6 +9,15 @@ namespace VirusTotalNet.Results;
 
 public class DomainReport
 {
+    [JsonProperty("Sophos category")]
+    public string SophosCategory { get; set; }
+
+    [JsonProperty("alphaMountain.ai category")]
+    public string AlphaMountainCategory { get; set; }
+
+    [JsonProperty("Comodo Valkyrie Verdict category")]
+    public string ComodoValkyrieCategory { get; set; }
+
     [JsonProperty("Alexa category")]
     public string AlexaCategory { get; set; }
 
