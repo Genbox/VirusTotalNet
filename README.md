@@ -5,14 +5,11 @@
 ### Features
 
 * Fully asynchronous API
-* Scan, rescan and get reports of scanned files
-* Scan URLs
+* Scan, rescan and get reports of scanned files and URLs
 * Get reports for IP addresses, URLs, and domains
-* Support for HTTP and HTTPS
 * Batch support for APIs that support it
 * Size and resource limits built in for better performance
-* Configurable limits to accommodate VT private API features
-* See https://developers.virustotal.com/reference for the VT API documentation
+* Configurable limits to accommodate some VT private API features. However, this API does not officially support the private VT API.
 
 ### Examples
 
@@ -36,8 +33,4 @@ Output:
 Seen before: True
 ```
 
-For more examples, take a look at the VirusTotal.Examples included in the project.
-
-### Contributors
-* [keithjjones](https://github.com/keithjjones)
-* [ivandrofly](https://github.com/ivandrofly)
+Take a look at the VirusTotal.Examples project for more examples.
