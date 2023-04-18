@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2022, by Ian Qvist. All rights reserved.</Copyright>
-    <RepositoryType>git</RepositoryType>
+    <Copyright>Copyright 2023, by Ian Qvist. All rights reserved.</Copyright>
     <Authors>Ian Qvist</Authors>
+    <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/Genbox/VirusTotalNet/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Genbox/VirusTotalNet/</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
