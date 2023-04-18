@@ -97,6 +97,9 @@ public class DomainReport
     [JsonProperty("WOT domain info")]
     public WOTInfo WOTDomainInfo { get; set; }
 
+    [JsonProperty("Xcitium Verdict Cloud category")]
+    public string XcitiumCloudCategory { get; set; }
+
     [JsonProperty("response_code")]
     public DomainResponseCode ResponseCode { get; set; }
 
