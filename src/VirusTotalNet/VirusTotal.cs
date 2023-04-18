@@ -140,7 +140,7 @@ public class VirusTotal : IDisposable
     /// <summary>
     /// Get or set the proxy.
     /// </summary>
-    public IWebProxy Proxy
+    public IWebProxy? Proxy
     {
         get => _httpClientHandler.Proxy;
         set
@@ -840,12 +840,14 @@ public class VirusTotal : IDisposable
 
             if (list == null)
                 throw new InvalidOperationException($"Unable to deserialize list response from {url}");
+
+            return list;
         }
 
         T? obj = token.ToObject<T>(_serializer);
 
         if (obj == null)
-            throw new InvalidOperationException($"Unable to deserialize response from {url}");
+            throw new InvalidOperationException($"Unable to deserialize object response from {url}");
 
         return new List<T> { obj };
     }
