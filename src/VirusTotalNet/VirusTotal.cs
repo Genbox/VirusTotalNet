@@ -33,7 +33,7 @@ public class VirusTotal : IDisposable
     /// <param name="apiKey">The API key you got from Virus Total</param>
     /// <param name="apiUrl">An optional url for a different API endpoint</param>
     /// <exception cref="ArgumentException"></exception>
-    public VirusTotal(string apiKey, string apiUrl = null)
+    public VirusTotal(string apiKey, string? apiUrl = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new ArgumentException("You have to set an API key.", nameof(apiKey));
@@ -66,17 +66,17 @@ public class VirusTotal : IDisposable
     /// <summary>
     /// Occurs when the raw JSON response is received from VirusTotal.
     /// </summary>
-    public event Action<byte[]> OnRawResponseReceived;
+    public event Action<byte[]>? OnRawResponseReceived;
 
     /// <summary>
     /// Occurs just before we send a request to VirusTotal.
     /// </summary>
-    public event Action<HttpRequestMessage> OnHTTPRequestSending;
+    public event Action<HttpRequestMessage>? OnHTTPRequestSending;
 
     /// <summary>
     /// Occurs right after a response has been received from VirusTotal.
     /// </summary>
-    public event Action<HttpResponseMessage> OnHTTPResponseReceived;
+    public event Action<HttpResponseMessage>? OnHTTPResponseReceived;
 
     /// <summary>
     /// When true, we check the file size before uploading it to Virus Total. The file size restrictions are based on the Virus Total public API 2.0 documentation.
@@ -822,40 +822,51 @@ public class VirusTotal : IDisposable
     {
         using HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
-        using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-        using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
-        using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
+        using Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using StreamReader sr = new StreamReader(responseStream, Encoding.UTF8);
+        using JsonTextReader jsonTextReader = new JsonTextReader(sr);
+        jsonTextReader.CloseInput = false;
+
+        SaveResponse(responseStream);
+
+        JToken token = await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false);
+
+        if (token.Type == JTokenType.Array)
         {
-            jsonTextReader.CloseInput = false;
+            List<T>? list = token.ToObject<List<T>>(_serializer);
 
-            SaveResponse(responseStream);
-
-            JToken token = await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false);
-
-            if (token.Type == JTokenType.Array)
-                return token.ToObject<List<T>>(_serializer);
-
-            return new List<T> { token.ToObject<T>(_serializer) };
+            if (list == null)
+                throw new InvalidOperationException($"Unable to deserialize list response from {url}");
         }
+
+        T? obj = token.ToObject<T>(_serializer);
+
+        if (obj == null)
+            throw new InvalidOperationException($"Unable to deserialize response from {url}");
+
+        return new List<T> { obj };
     }
 
-    private async Task<T> GetResponse<T>(string url, HttpMethod method, HttpContent content)
+    private async Task<T> GetResponse<T>(string url, HttpMethod method, HttpContent? content)
     {
         using HttpResponseMessage response = await SendRequest(url, method, content).ConfigureAwait(false);
 
-        using (Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-        using (StreamReader sr = new StreamReader(responseStream, Encoding.UTF8))
-        using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
-        {
-            jsonTextReader.CloseInput = false;
+        using Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using StreamReader sr = new StreamReader(responseStream, Encoding.UTF8);
+        using JsonTextReader jsonTextReader = new JsonTextReader(sr);
+        jsonTextReader.CloseInput = false;
 
-            SaveResponse(responseStream);
+        SaveResponse(responseStream);
 
-            return _serializer.Deserialize<T>(jsonTextReader);
-        }
+        T? obj = _serializer.Deserialize<T>(jsonTextReader);
+
+        if (obj == null)
+            throw new InvalidOperationException($"Unable to deserialize response from {url}");
+
+        return obj;
     }
 
-    private async Task<HttpResponseMessage> SendRequest(string url, HttpMethod method, HttpContent content)
+    private async Task<HttpResponseMessage> SendRequest(string url, HttpMethod method, HttpContent? content)
     {
         //We need this check because sometimes url is a full url and sometimes it is just an url segment
         if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))

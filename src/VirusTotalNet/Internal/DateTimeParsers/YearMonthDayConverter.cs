@@ -13,20 +13,15 @@ internal class YearMonthDayConverter : DateTimeConverterBase
     private const string _newDateTimeFormat = "yyyyMMdd";
     private const string _oldDateTimeFormat = "yyyyMMddHHmmss";
 
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         writer.DateFormatString = _newDateTimeFormat;
         writer.WriteValue(value);
     }
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.Value == null)
-            return DateTime.MinValue;
-
-        string valueStr = reader.Value as string;
-
-        if (string.IsNullOrEmpty(valueStr))
+        if (reader.Value is not string valueStr)
             return DateTime.MinValue;
 
         if (!ResourcesHelper.IsNumeric(valueStr))

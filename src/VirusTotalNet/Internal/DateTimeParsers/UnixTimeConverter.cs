@@ -14,13 +14,16 @@ internal class UnixTimeConverter : DateTimeConverterBase
         return _epoc.AddSeconds(unixTime).ToLocalTime();
     }
 
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         throw new NotSupportedException();
     }
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
+        if (reader.Value == null)
+            return null;
+
         string stringVal = reader.Value.ToString();
 
         if (string.IsNullOrWhiteSpace(stringVal))

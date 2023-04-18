@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Properties.targets" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>A full implementation of the VirusTotal 2.0 API</Description>
     <PackageTags>VirusTotal</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
