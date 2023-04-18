@@ -688,7 +688,7 @@ public class VirusTotal : IDisposable
     /// Retrieves a comment on a file.
     /// </summary>
     /// <param name="file">The file you wish to retrieve a comment from</param>
-    /// <param name="before">TODO</param>
+    /// <param name="before">Get the comments before this time</param>
     public async Task<CommentResult> GetCommentAsync(FileInfo file, DateTime? before = null)
     {
         return await GetCommentAsync(ResourcesHelper.GetResourceIdentifier(file), before).ConfigureAwait(false);
@@ -698,7 +698,7 @@ public class VirusTotal : IDisposable
     /// Retrieves a comment from an URL.
     /// </summary>
     /// <param name="uri">The URL you wish to retrieve a comment from</param>
-    /// <param name="before">TODO</param>
+    /// <param name="before">Get the comments before this time</param>
     public async Task<CommentResult> GetCommentAsync(Uri uri, DateTime? before = null)
     {
         return await GetCommentAsync(uri.ToString(), before).ConfigureAwait(false);
@@ -713,10 +713,13 @@ public class VirusTotal : IDisposable
     {
         resource = ResourcesHelper.ValidateResourcea(resource, ResourceType.AnyHash | ResourceType.URL);
 
-        //TODO: before
+        string? beforeStr = null;
 
-        //https://www.virustotal.com/vtapi/v2/comments/get
-        return await GetResponse<CommentResult>($"comments/get?apikey={_apiKey}&resource={resource}", HttpMethod.Get, null).ConfigureAwait(false);
+        if (before != null)
+            beforeStr = "&before=" + before.Value.ToString("yyyyMMddHHmmss");
+
+        //https://developers.virustotal.com/v2.0/reference/comments-get
+        return await GetResponse<CommentResult>($"comments/get?apikey={_apiKey}&resource={resource}{beforeStr}", HttpMethod.Get, null).ConfigureAwait(false);
     }
 
     /// <summary>
