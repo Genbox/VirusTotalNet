@@ -875,7 +875,7 @@ public class VirusTotal : IDisposable
     {
         //We need this check because sometimes url is a full url and sometimes it is just an url segment
         if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            url = (UseTLS ? "https://" : "http://") + _apiUrl + url;
+            url = $"{(UseTLS ? "https://" : "http://")}{_apiUrl}{url}";
 
         using HttpRequestMessage request = new HttpRequestMessage(method, url);
         request.Content = content;
@@ -890,13 +890,13 @@ public class VirusTotal : IDisposable
             throw new RateLimitException("You have reached the 4 requests pr. min. limit of VirusTotal");
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
-            throw new AccessDeniedException("You don't have access to the service. Make sure your API key is working correctly.");
+            throw new AccessDeniedException($"You don't have access to this service at '{url}'. Make sure you have a working API key and the required access.");
 
         if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
             throw new SizeLimitException(FileSizeLimit);
 
         if (response.StatusCode != HttpStatusCode.OK)
-            throw new Exception("API gave error code " + response.StatusCode);
+            throw new Exception($"API gave error code {response.StatusCode}");
 
         return response;
     }
