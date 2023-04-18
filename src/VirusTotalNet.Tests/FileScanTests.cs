@@ -61,7 +61,7 @@ public class FileScanTests : TestBase
         await Assert.ThrowsAsync<SizeLimitException>(async () => await VirusTotal.ScanFileAsync(new byte[VirusTotal.FileSizeLimit + 1], TestData.TestFileName));
     }
 
-    [Fact]
+    [Fact(Skip = "Public keys don't have access to this")]
     public async Task ScanVeryLargeFile()
     {
         VirusTotal.Timeout = TimeSpan.FromSeconds(500);

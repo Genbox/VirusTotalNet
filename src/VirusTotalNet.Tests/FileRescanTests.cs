@@ -10,7 +10,7 @@ namespace VirusTotalNet.Tests;
 
 public class FileRescanTests : TestBase
 {
-    [Fact]
+    [Fact(Skip = "Public keys no longer have access to this")]
     public async Task RescanKnownFile()
     {
         RescanResult fileResult = await VirusTotal.RescanFileAsync(TestData.EICARMalware);
@@ -25,7 +25,7 @@ public class FileRescanTests : TestBase
     //    //TODO: Can't seem to provoke an error response code.
     //}
 
-    [Fact]
+    [Fact(Skip = "Public keys no longer have access to this")]
     public async Task RescanMultipleKnownFile()
     {
         IEnumerable<RescanResult> fileResult = await VirusTotal.RescanFilesAsync(TestData.KnownHashes);
@@ -37,7 +37,7 @@ public class FileRescanTests : TestBase
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Public keys no longer have access to this")]
     public async Task RescanUnknownFile()
     {
         IgnoreMissingJson(" / Permalink", " / scan_id", " / SHA256");
@@ -48,7 +48,7 @@ public class FileRescanTests : TestBase
         Assert.Equal(RescanResponseCode.ResourceNotFound, fileResult.ResponseCode);
     }
 
-    [Fact]
+    [Fact(Skip = "Public keys no longer have access to this")]
     public async Task RescanSmallFile()
     {
         RescanResult fileResult = await VirusTotal.RescanFileAsync(new byte[1]);
@@ -57,7 +57,7 @@ public class FileRescanTests : TestBase
         Assert.Equal(RescanResponseCode.Queued, fileResult.ResponseCode);
     }
 
-    [Fact]
+    [Fact(Skip = "Public keys no longer have access to this")]
     public async Task RescanBatchLimit()
     {
         IgnoreMissingJson("[array] / Permalink", "[array] / scan_id", "[array] / SHA256");
