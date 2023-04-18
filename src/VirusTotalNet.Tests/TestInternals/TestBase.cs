@@ -102,10 +102,7 @@ public abstract class TestBase : IDisposable
                     missingPropertyInJson.Add(key, error);
             }
             else
-            {
-                if (!other.ContainsKey(key))
-                    other.Add(key, error);
-            }
+                other.TryAdd(key, error);
         }
 
         // Combine all errors into a nice text
@@ -115,7 +112,7 @@ public abstract class TestBase : IDisposable
         {
             sb.AppendLine("Fields missing in C# (Present in JSON)");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in missingFieldInCSharp)
-                sb.AppendLine($"[{pair.Value.CurrentObject.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
+                sb.AppendLine($"[{pair.Value.CurrentObject?.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
 
             sb.AppendLine();
         }
@@ -124,7 +121,7 @@ public abstract class TestBase : IDisposable
         {
             sb.AppendLine("Fields missing in JSON (Present in C#)");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in missingPropertyInJson)
-                sb.AppendLine($"[{pair.Value.CurrentObject.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
+                sb.AppendLine($"[{pair.Value.CurrentObject?.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
 
             sb.AppendLine();
         }
@@ -133,7 +130,7 @@ public abstract class TestBase : IDisposable
         {
             sb.AppendLine("Other errors");
             foreach (KeyValuePair<string, ErrorEventArgs> pair in other)
-                sb.AppendLine($"[{pair.Value.CurrentObject.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
+                sb.AppendLine($"[{pair.Value.CurrentObject?.GetType().Name}] {pair.Key}: {pair.Value.ErrorContext.Error.Message}");
 
             sb.AppendLine();
         }
@@ -164,7 +161,7 @@ public abstract class TestBase : IDisposable
             sb.AppendLine();
             sb.AppendLine("Raw JSON: ");
             sb.AppendLine(LastCallInJSON);
-            throw new Exception(sb.ToString());
+            throw new InvalidOperationException(sb.ToString());
         }
 
         GC.SuppressFinalize(this);
